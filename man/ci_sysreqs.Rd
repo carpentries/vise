@@ -4,13 +4,20 @@
 \alias{ci_sysreqs}
 \title{detect and execute system requirements from a lockfile}
 \usage{
-ci_sysreqs(lockfile, execute = TRUE, exclude = c("git", "make", "pandoc"))
+ci_sysreqs(
+  lockfile,
+  execute = TRUE,
+  sudo = TRUE,
+  exclude = c("git", "make", "pandoc")
+)
 }
 \arguments{
 \item{lockfile}{the path to a {renv} lockfile}
 
 \item{execute}{if \code{TRUE} (default), the commands from \code{\link[remotes:system_requirements]{remotes::system_requirements()}}
 will be executed via \code{\link[base:system]{base::system()}}.}
+
+\item{sudo}{if \code{TRUE} (default), the command runs as root}
 
 \item{exclude}{packages to exclude from installation because they already
 exist on the system.}

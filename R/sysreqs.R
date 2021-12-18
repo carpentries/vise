@@ -8,6 +8,7 @@
 #' @param lockfile the path to a {renv} lockfile
 #' @param execute if `TRUE` (default), the commands from [remotes::system_requirements()]
 #'   will be executed via [base::system()].
+#' @param sudo if `TRUE` (default), the command runs as root
 #' @param exclude packages to exclude from installation because they already
 #'   exist on the system.
 #' @return a vector of exectutible system calls to install the dependencies
@@ -17,7 +18,7 @@
 #'
 #' # The system requirements for a typical {knitr} installation
 #' ci_sysreqs(lock, execute = FALSE)
-ci_sysreqs <- function(lockfile, execute = TRUE, exclude = c("git", "make", "pandoc")) {
+ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc")) {
   # convert the lockfile to a temporary DESCRIPTION file
   if (!requireNamespace("remotes", quietly = TRUE)) {
     stop("The {remotes} package is required for this function.")
@@ -40,7 +41,8 @@ ci_sysreqs <- function(lockfile, execute = TRUE, exclude = c("git", "make", "pan
 
   if (execute) {
     for (r in reqs) {
-      system(r)
+      su <- if (sudo) "sudo" else ""
+      system(trimws(paste(su, r)))
     }
   }
   return(reqs)
