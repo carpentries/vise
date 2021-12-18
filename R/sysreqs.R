@@ -19,6 +19,9 @@
 #' ci_sysreqs(lock, execute = FALSE)
 ci_sysreqs <- function(lockfile, execute = TRUE, exclude = c("git", "make", "pandoc")) {
   # convert the lockfile to a temporary DESCRIPTION file
+  if (!requireNamespace("remotes", quietly = TRUE)) {
+    stop("The {remotes} package is required for this function.")
+  }
   desc <- lock2desc(lockfile)
   ver  <- tolower(system("lsb_release -irs", intern = TRUE))
   reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))

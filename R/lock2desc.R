@@ -9,6 +9,9 @@
 #' lock <- system.file("renv.lock", package = "vise")
 #' lock2desc(lock)
 lock2desc <- function(lockfile, desc = tempfile()) {
+  if (!requireNamespace("desc", quietly = TRUE)) {
+    stop("The {desc} package is required for this function")
+  }
   dir.create(desc)
   lock <- asNamespace("renv")$lockfile(lockfile)
   dat <- lock$data()$Packages
