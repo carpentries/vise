@@ -1,26 +1,17 @@
-
-# # Verify inputs ------------------------------------------------------
-# cat("::group::Verifying inputs\n")
-# in_repos <- expression(${{ inputs.repos }})
-# pd <- getParseData(parse(text = as.character(in_repos)))
-# funs <- pd$token == "SYMBOL_FUNCTION_CALL"
-# if (any(funs) && any(pd$text[funs] != "c")) {
-#   stop("::error::repository settings should be an R vector. No functions other than `c()` are allowed")
-# }
-# cat("::endgroup::\n")
-# # Setup --------------------------------------------------------------
-# cat("::group::Preparing {renv}\n")
-# on_linux <- Sys.info()[["sysname"]] == "Linux"
-# if (on_linux)
-#   options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
-# options(repos = ${{ inputs.repos }})
-# if (!requireNamespace("renv", quietly = TRUE))
-#   install.packages("renv")
-# n <- 0
-# the_report <- character(0)
-# cat("::endgroup::\n")
-
-# Load {renv}, read lockfile, restore, hydrate, and snapshot ---------
+#' Update Packages in a {renv} lockfile in GitHub Actions
+#'
+#' With actively developed projects, it can be beneficial to auto-update
+#' packages used in the project with a failsafe to roll back versions in case
+#' there are breaking changes that need to be fixed. This is noramlly
+#' accomplished via the function [renv::update()], but that assumes that no new
+#' packages have been introduced into your workflow. This function searches for
+#' new packages, and updates existing packages.
+#'
+#' @param profile the profile of the renv project
+#' @param update a character vector of `'true'` (default) or `'false'`, which 
+#'   indicates whether or not the existing packages should be updated.
+#' @param repos the repositories to use in the search.
+#' @export
 ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = NULL) {
 
   n <- 0
@@ -95,5 +86,4 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   meow("::set-output name=n::", n)
   meow("::set-output name=date::", as.character(Sys.Date()))
   cat("::endgroup::\n")
-
 }
