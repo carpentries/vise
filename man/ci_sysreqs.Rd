@@ -35,5 +35,5 @@ integration, so will probably error on macos and windows
 lock <- system.file("renv.lock", package = "vise")
 
 # The system requirements for a typical {knitr} installation
-ci_sysreqs(lock, execute = FALSE)
+vise::ci_sysreqs(lock, execute = FALSE)
 }

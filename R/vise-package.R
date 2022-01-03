@@ -2,7 +2,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom utils capture.output
+#' @importFrom utils capture.output getParseData
 #' @import renv
 ## usethis namespace: end
 NULL

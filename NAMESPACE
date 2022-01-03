@@ -2,5 +2,7 @@
 
 export(ci_sysreqs)
 export(lock2desc)
+export(verify_simple_vector)
 import(renv)
 importFrom(utils,capture.output)
+importFrom(utils,getParseData)

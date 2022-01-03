@@ -18,5 +18,7 @@ Imports:
     renv (>= 0.14.0),
     utils
 Suggests:
+    testthat (>= 3.0.0),
     desc,
     remotes
+Config/testthat/edition: 3

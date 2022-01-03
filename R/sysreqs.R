@@ -17,7 +17,7 @@
 #' lock <- system.file("renv.lock", package = "vise")
 #'
 #' # The system requirements for a typical {knitr} installation
-#' ci_sysreqs(lock, execute = FALSE)
+#' vise::ci_sysreqs(lock, execute = FALSE)
 ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc")) {
   # convert the lockfile to a temporary DESCRIPTION file
   if (!requireNamespace("remotes", quietly = TRUE)) {
@@ -32,6 +32,10 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     reqs <- reqs[!grepl(e, reqs)]
   }
 
+  if (length(reqs) == 0) {
+    return(reqs)
+  }
+
   # on ubuntu, we can assume apt, so we can compress this to a single call
   if (ver[1] == "ubuntu") {
     nz <- nzchar(reqs)
@@ -39,11 +43,13 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     reqs <- paste("apt-get install -y", deps)
   }
 
+  #nocov start
   if (execute) {
     for (r in reqs) {
       su <- if (sudo) "sudo" else ""
       system(trimws(paste(su, r)))
     }
   }
+  #nocov end
   return(reqs)
 }
