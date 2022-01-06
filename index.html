@@ -63,11 +63,29 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9">
-The 'renv' package is a wonderful tool for managing projects that
-  is extensible and reliable. Vise serves as an opinionated implementation of
-  'renv' that provides an one-function interface to the hydrate, restore, 
-  snapshot workflow.
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="vise">Vise<a class="anchor" aria-label="anchor" href="#vise"></a>
+</h1></div>
+<blockquote>
+<p>A vise or vice is a mechanical apparatus used to secure an object to allow work to be performed on it.</p>
+<p><a href="https://en.wikipedia.org/wiki/Vise" class="external-link uri">https://en.wikipedia.org/wiki/Vise</a></p>
+</blockquote>
+<p>The {vise} package is a thin wrapper around {renv}, {desc}, and {remotes} that is designed to manage and update renv lockfiles in a project. This explicitly works with The Carpentries lessons, but could be extended for other use.</p>
+<div class="section level2">
+<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
+</h2>
+<ul>
+<li>
+<code><a href="reference/ci_sysreqs.html">ci_sysreqs()</a></code> gather and install system requirements from a {renv} lockfile that de-duplicates the system calls and uses a single command.</li>
+<li>
+<code><a href="reference/ci_update.html">ci_update()</a></code> updates a lockfile in two ways: 1. scans project for new packages and 2. updates existing packages to their latest versions on cran. This is useful for creating pull requests with the changed lockfile to trigger previews with the new package versions.</li>
+<li>
+<code><a href="reference/lock2desc.html">lock2desc()</a></code> convert a lockfile to a DESCRIPTION file</li>
+<li>
+<code><a href="reference/verify_simple_vector.html">verify_simple_vector()</a></code> verifies that an input vector is actually a simple vector and not malicious code.</li>
+</ul>
+</div>
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
