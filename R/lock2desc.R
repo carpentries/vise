@@ -12,7 +12,13 @@ lock2desc <- function(lockfile, desc = tempfile()) {
   if (!requireNamespace("desc", quietly = TRUE)) {
     stop("The {desc} package is required for this function")
   }
-  dir.create(desc)
+  if (basename(desc) != "DESCRIPTION" && !file.exists(desc)) {
+    # if we have a tempfile, we need to create it
+    dir.create(desc)
+    out <- file.path(desc, "DESCRIPTION")
+  } else {
+    out <- desc
+  }
   lock <- asNamespace("renv")$lockfile(lockfile)
   dat <- lock$data()$Packages
   pkg <- names(dat)
@@ -20,7 +26,6 @@ lock2desc <- function(lockfile, desc = tempfile()) {
   deps <- data.frame(type = "Imports", package = pkg, version = versions)
   d <- desc::description$new("!new")
   d$set_deps(deps)
-  out <- file.path(desc, "DESCRIPTION")
   d$write(file = out)
   out
 }
