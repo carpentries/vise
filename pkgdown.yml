@@ -1,8 +1,8 @@
 pandoc: 2.7.3
-pkgdown: 2.0.2
+pkgdown: 2.0.5
 pkgdown_sha: ~
 articles: {}
-last_built: 2022-01-24T17:17Z
+last_built: 2022-07-06T22:47Z
 urls:
   reference: https://zkamvar.github.io/vise/reference
   article: https://zkamvar.github.io/vise/articles
