@@ -45,6 +45,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
   #nocov start
   if (execute) {
+    if (ver[1] == "ubuntu") system("sudo apt-get update")
     for (r in reqs) {
       su <- if (sudo) "sudo" else ""
       system(trimws(paste(su, r)))
