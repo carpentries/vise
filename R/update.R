@@ -32,7 +32,15 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
 
   # Detect any new packages that entered the lesson --------------------
   cat("::group::Discovering new packages\n")
-  hydra       <- renv::hydrate(library = lib, update = FALSE)
+  hydra <- renv::hydrate(library = lib, update = FALSE)
+  # if there are errors here, it might be because we did not account for them
+  # when enumerating the system requirements. This accounts for that by 
+  # attempting the sysreqs installation and then re-trying the hydration
+  if (length(hydra$missing) && on_linux) { 
+    cat("Some packages failed installation... attempting to find system requirements\n")
+    ci_new_pkgs_sysreqs(hydra$missing)
+    hydra <- renv::hydrate(library = lib, update = FALSE)
+  }
   new_lock    <- renv::snapshot(library = lib, lockfile = lock)
   sneaky_pkgs <- setdiff(names(new_lock$Packages), names(current_lock$Packages))
   if (length(sneaky_pkgs)) {
@@ -79,11 +87,17 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   # Construct the output -----------------------------------------------
   # https://github.community/t/set-output-truncates-multiline-strings/16852/3?u=zkamvar
   cat("::group::Creating the output\n")
-  the_report <- paste0(the_report, collapse = "%0A")
-  meow  <- function(...) cat(..., "\n", sep = "")
-  meow(the_report)
-  meow("::set-output name=report::", the_report)
-  meow("::set-output name=n::", n)
-  meow("::set-output name=date::", as.character(Sys.Date()))
+  meow  <- function(name, thing) {
+    out <- Sys.getenv("GITHUB_OUTPUT")
+    if (length(thing) > 1L) {
+      cat(name, "<<EOF\n", file = out, sep = "", append = TRUE)
+      cat(thing, "EOF", file = out, sep = "\n", append = TRUE)
+    } else {
+      cat(name, "=", thing, "\n", file = out, sep = "", append = TRUE)
+    }
+  }
+  meow("report", the_report)
+  meow("n", n)
+  meow("date", as.character(Sys.Date()))
   cat("::endgroup::\n")
 }

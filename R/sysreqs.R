@@ -54,3 +54,11 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   #nocov end
   return(reqs)
 }
+
+ci_new_pkgs_sysreqs <- function(pkgs, ...) {
+  d <- desc::description$new("!new")
+  for (pkg in pkgs) {
+    d$set_dep(pkg$package)
+  }
+  ci_sysreqs(d, ...)
+}
