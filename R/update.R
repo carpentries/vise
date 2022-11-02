@@ -83,8 +83,15 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   # Construct the output -----------------------------------------------
   # https://github.community/t/set-output-truncates-multiline-strings/16852/3?u=zkamvar
   cat("::group::Creating the output\n")
-  the_report <- paste0(the_report, collapse = "\n")
-  meow  <- function(name, ...) cat(name, "=", ..., "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
+  meow  <- function(name, thing) {
+    out <- Sys.getenv("GITHUB_OUTPUT")
+    if (length(thing) > 1L) {
+      cat(name, "<<EOF\n", sep = "", file = out, sep = "", append = TRUE)
+      cat(thing, "EOF", sep = "\n", file = out, sep = "\n", append = TRUE)
+    } else {
+      cat(name, "=", thing, "\n", file = out, sep = "", append = TRUE)
+    }
+  }
   meow(the_report)
   meow("report", the_report)
   meow("n", n)
