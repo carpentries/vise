@@ -1,8 +1,12 @@
 #' convert a lockfile to a description file
 #'
-#' @param lockfile the path to the renv lockfile
+#' By default, this will take in a lockfile or a desc object and convert it to 
+#' an equivalent DESCRIPTION file for use with packages that check for system
+#' dependencies.
+#'
+#' @param lockfile the path to the renv lockfile OR a [desc::description()] object.
 #' @param desc the path to the new description file
-#' @return desc
+#' @return the path to the new description file
 #'
 #' @export
 #' @examples

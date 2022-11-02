@@ -32,10 +32,14 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
 
   # Detect any new packages that entered the lesson --------------------
   cat("::group::Discovering new packages\n")
-  hydra       <- renv::hydrate(library = lib, update = FALSE)
+  hydra <- renv::hydrate(library = lib, update = FALSE)
+  # if there are errors here, it might be because we did not account for them
+  # when enumerating the system requirements. This accounts for that by 
+  # attempting the sysreqs installation and then re-trying the hydration
   if (length(hydra$missing) && on_linux) { 
+    cat("Some packages failed installation... attempting to find system requirements\n")
     ci_new_pkgs_sysreqs(hydra$missing)
-    hydra     <- renv::hydrate(library = lib, update = FALSE)
+    hydra <- renv::hydrate(library = lib, update = FALSE)
   }
   new_lock    <- renv::snapshot(library = lib, lockfile = lock)
   sneaky_pkgs <- setdiff(names(new_lock$Packages), names(current_lock$Packages))

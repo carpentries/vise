@@ -7,15 +7,17 @@
 lock2desc(lockfile, desc = tempfile())
 }
 \arguments{
-\item{lockfile}{the path to the renv lockfile}
+\item{lockfile}{the path to the renv lockfile OR a \code{\link[desc:description]{desc::description()}} object.}
 
 \item{desc}{the path to the new description file}
 }
 \value{
-desc
+the path to the new description file
 }
 \description{
-convert a lockfile to a description file
+By default, this will take in a lockfile or a desc object and convert it to
+an equivalent DESCRIPTION file for use with packages that check for system
+dependencies.
 }
 \examples{
 lock <- system.file("renv.lock", package = "vise")
