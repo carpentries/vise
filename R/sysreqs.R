@@ -55,7 +55,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   return(reqs)
 }
 
-ci_new_pkgs_sysreq <- function(pkgs, ...) {
+ci_new_pkgs_sysreqs <- function(pkgs, ...) {
   d <- desc::description("!new")
   for (pkg in pkgs) {
     d$set_dep(pkg$package)
