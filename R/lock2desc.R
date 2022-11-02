@@ -19,13 +19,17 @@ lock2desc <- function(lockfile, desc = tempfile()) {
   } else {
     out <- desc
   }
-  lock <- asNamespace("renv")$lockfile(lockfile)
-  dat <- lock$data()$Packages
-  pkg <- names(dat)
-  versions <- paste("==", vapply(dat, function(p) p$Version, character(1)))
-  deps <- data.frame(type = "Imports", package = pkg, version = versions)
-  d <- desc::description$new("!new")
-  d$set_deps(deps)
+  if (inherits(lockfile, "description")) {
+    d <- lockfile
+  } else {
+    lock <- asNamespace("renv")$lockfile(lockfile)
+    dat <- lock$data()$Packages
+    pkg <- names(dat)
+    versions <- paste("==", vapply(dat, function(p) p$Version, character(1)))
+    deps <- data.frame(type = "Imports", package = pkg, version = versions)
+    d <- desc::description$new("!new")
+    d$set_deps(deps)
+  }
   d$write(file = out)
   out
 }
