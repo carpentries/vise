@@ -32,7 +32,9 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
 
   # Detect any new packages that entered the lesson --------------------
   cat("::group::Discovering new packages\n")
+  deps        <- renv::dependencies(library = lib)
   hydra       <- renv::hydrate(library = lib, update = FALSE)
+  print(hydra)
   new_lock    <- renv::snapshot(library = lib, lockfile = lock)
   sneaky_pkgs <- setdiff(names(new_lock$Packages), names(current_lock$Packages))
   if (length(sneaky_pkgs)) {
