@@ -92,7 +92,6 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
       cat(name, "=", thing, "\n", file = out, sep = "", append = TRUE)
     }
   }
-  meow(the_report)
   meow("report", the_report)
   meow("n", n)
   meow("date", as.character(Sys.Date()))
