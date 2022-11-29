@@ -25,6 +25,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   }
   desc <- lock2desc(lockfile)
   ver  <- tolower(system("lsb_release -irs", intern = TRUE))
+  print(ver)
   reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
 
   # exclude packages that we already have on the system
