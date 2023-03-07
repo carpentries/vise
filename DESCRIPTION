@@ -15,7 +15,7 @@ RoxygenNote: 7.2.1
 URL: https://github.com/zkamvar/vise
 BugReports: https://github.com/zkamvar/vise/issues
 Imports: 
-    renv (== 0.16.0),
+    renv (>= 0.14.0),
     utils
 Suggests:
     testthat (>= 3.0.0),
