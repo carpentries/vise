@@ -1,3 +1,8 @@
+# vise 0.0.0.9002
+
+* a random delimiter is set for setting github output parameters
+* a shim for renv 0.17.1 has been set to fix broken package update reports. 
+
 # vise 0.0.0.9001
 
 * `ci_update()` now sends output messages using GitHub's environment variable syntax

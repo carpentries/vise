@@ -1,6 +1,6 @@
 Package: vise
 Title: Package Discovery and Management Based on 'renv'
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     person("Zhian N.", "Kamvar", , "zkamvar@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-1458-7108"))

@@ -76,6 +76,13 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
     renv::update(library = lib)
     renv::snapshot(lockfile = lock)
     n <- n + length(updates$diff)
+    # workaround as the print method for this class was removed in 0.17.1
+    if (packageVersion("renv") >= "0.17.1") {
+      print.renv_updates <- function(x, ...) {
+        ns <- asNamespace("renv")
+        ns$renv_updates_report(x$diff, x$old, x$new)
+      }
+    }
     the_report <- c(the_report, 
       utils::capture.output(print(updates), type = "message"))
     cat("Updating", length(updates$diff), "packages", "\n")
@@ -90,8 +97,11 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   meow  <- function(name, thing) {
     out <- Sys.getenv("GITHUB_OUTPUT")
     if (length(thing) > 1L) {
-      cat(name, "<<EOF\n", file = out, sep = "", append = TRUE)
-      cat(thing, "EOF", file = out, sep = "\n", append = TRUE)
+      # generating random delimiter for the output to avoid injection
+      # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+      EOF <- paste(sample(c(letters, LETTERS, 0:9), 20, replace = TRUE), collapse = "")
+      cat(name, "<<", EOF, "\n", file = out, sep = "", append = TRUE)
+      cat(thing, EOF, file = out, sep = "\n", append = TRUE)
     } else {
       cat(name, "=", thing, "\n", file = out, sep = "", append = TRUE)
     }
