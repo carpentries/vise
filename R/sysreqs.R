@@ -17,7 +17,9 @@
 #' lock <- system.file("renv.lock", package = "vise")
 #'
 #' # The system requirements for a typical {knitr} installation
-#' vise::ci_sysreqs(lock, execute = FALSE)
+#' if (startsWith(tolower(R.version$os), "linux")) {
+#'   print(vise::ci_sysreqs(lock, execute = FALSE))
+#' }
 ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc")) {
   # convert the lockfile to a temporary DESCRIPTION file
   if (!requireNamespace("remotes", quietly = TRUE)) {
