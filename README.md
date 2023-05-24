@@ -21,3 +21,12 @@ works with The Carpentries lessons, but could be extended for other use.
 - `verify_simple_vector()` verifies that an input vector is actually a simple
   vector and not malicious code.
 
+## Goals
+
+This was originally intended to be the package that encompassed the {renv}
+components from {sandpaper} so that it could be further exploited for 
+non-Carpentries uses. Time constraints have delayed that vision. 
+
+Instead, this is a lightweight package for use in [The Carpentries GitHub Actions](https://github.com/carpentries/actions)
+in order to provision and update packages so that the infrastructure does not
+need to install the entire {sandpaper} suite to provision new packages. 
