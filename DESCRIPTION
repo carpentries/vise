@@ -22,5 +22,6 @@ Suggests:
     desc,
     remotes,
     withr
+Remotes: r-lib/remotes
 Config/testthat/edition: 3
 Config/Needs/check: github::r-lib/remotes
