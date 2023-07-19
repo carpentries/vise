@@ -20,7 +20,7 @@
 #' if (startsWith(tolower(R.version$os), "linux")) {
 #'   print(vise::ci_sysreqs(lock, execute = FALSE))
 #' }
-ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc")) {
+ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc", "curl")) {
   # convert the lockfile to a temporary DESCRIPTION file
   if (!requireNamespace("remotes", quietly = TRUE)) {
     stop("The {remotes} package is required for this function.")

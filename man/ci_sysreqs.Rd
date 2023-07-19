@@ -8,7 +8,7 @@ ci_sysreqs(
   lockfile,
   execute = TRUE,
   sudo = TRUE,
-  exclude = c("git", "make", "pandoc")
+  exclude = c("git", "make", "pandoc", "curl")
 )
 }
 \arguments{
