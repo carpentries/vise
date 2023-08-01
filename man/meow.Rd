@@ -25,12 +25,14 @@ according to this guidance from GitHub to avoid injection:
 \url{https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings}
 }
 \examples{
+# NOTE: this function is not exported
 tmp <- tempfile()
 env <- Sys.getenv("GITHUB_OUTPUT", unset = "")
 on.exit(Sys.setenv("GITHUB_OUTPUT" = env))
 Sys.setenv("GITHUB_OUTPUT" = tmp)
-meow("single", "hello!")
-meow("multi", c("This information", "exists on", "multiple lines"))
+vise <- asNamespace("vise")
+vise$meow("single", "hello!")
+vise$meow("multi", c("This information", "exists on", "multiple lines"))
 writeLines(readLines(tmp))
 }
 \keyword{internal}

@@ -13,12 +13,14 @@
 #' @keywords internal
 #' @return nothing. This is used to write output for GitHub
 #' @examples
+#' # NOTE: this function is not exported
 #' tmp <- tempfile()
 #' env <- Sys.getenv("GITHUB_OUTPUT", unset = "")
 #' on.exit(Sys.setenv("GITHUB_OUTPUT" = env))
 #' Sys.setenv("GITHUB_OUTPUT" = tmp)
-#' meow("single", "hello!")
-#' meow("multi", c("This information", "exists on", "multiple lines"))
+#' vise <- asNamespace("vise")
+#' vise$meow("single", "hello!")
+#' vise$meow("multi", c("This information", "exists on", "multiple lines"))
 #' writeLines(readLines(tmp))
 meow  <- function(name, thing) {
   out <- Sys.getenv("GITHUB_OUTPUT")
