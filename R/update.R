@@ -66,7 +66,9 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   should_update <- as.logical(toupper(update))
   if (should_update) {
     cat("::group::Applying Updates\n")
-    updates <- renv::update(library = lib, check = TRUE)
+    update_report <- utils::capture.output(
+      updates <- renv::update(library = lib, check = TRUE)
+    )
     updates_needed <- !identical(updates, TRUE)
   } else {
     updates_needed <- FALSE
@@ -76,15 +78,7 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
     renv::update(library = lib)
     renv::snapshot(lockfile = lock)
     n <- n + length(updates$diff)
-    # workaround as the print method for this class was removed in 0.17.1
-    if (packageVersion("renv") >= "0.17.1") {
-      print.renv_updates <- function(x, ...) {
-        ns <- asNamespace("renv")
-        ns$renv_updates_report(x$diff, x$old, x$new)
-      }
-    }
-    the_report <- c(the_report, 
-      utils::capture.output(print(updates), type = "message"))
+    the_report <- c(the_report, update_report)
     cat("Updating", length(updates$diff), "packages", "\n")
     cat("::endgroup::\n")
   }
