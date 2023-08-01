@@ -12,7 +12,7 @@
 #'   indicates whether or not the existing packages should be updated.
 #' @param repos the repositories to use in the search.
 #' @export
-ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = NULL) {
+ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = NULL) {
 
   n <- 0
   the_report <- character(0)
@@ -20,7 +20,7 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   Sys.setenv("RENV_PROFILE" = profile)
   lib  <- renv::paths$library()
   lock <- renv::paths$lockfile()
-  current_lock <- lockfile(lock)$data()
+  current_lock <- get_lockfile(lock)
   on_linux <- Sys.info()[["sysname"]] == "Linux"
   if (!is.null(repos))
     options(repos = repos)

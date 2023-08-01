@@ -26,8 +26,8 @@ lock2desc <- function(lockfile, desc = tempfile()) {
   if (inherits(lockfile, "description")) {
     d <- lockfile
   } else {
-    lock <- asNamespace("renv")$lockfile(lockfile)
-    dat <- lock$data()$Packages
+    lock <- get_lockfile(lockfile) #asNamespace("renv")$lockfile(lockfile)
+    dat <- lock$Packages
     pkg <- names(dat)
     versions <- paste("==", vapply(dat, function(p) p$Version, character(1)))
     deps <- data.frame(type = "Imports", package = pkg, version = versions)
