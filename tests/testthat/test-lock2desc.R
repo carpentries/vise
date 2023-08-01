@@ -7,8 +7,8 @@ test_that("a DESCRIPTION file can be temporarily created", {
   expect_true(file.exists(res))
   expect_match(basename(res), "DESCRIPTION")
   expect_success(expect_s3_class(desc <- desc::description$new(res), "description"))
-  this_lock <- asNamespace("renv")$lockfile(lock)
-  expect_setequal(names(this_lock$data()$Packages), desc$get_deps()$package)
+  this_lock <- get_lockfile(lock) # asNamespace("renv")$lockfile(lock)
+  expect_setequal(names(this_lock$Packages), desc$get_deps()$package)
 
 })
 
@@ -21,7 +21,7 @@ test_that("a new DESCRIPTION file can be created", {
   expect_true(file.exists(res))
   expect_match(basename(res), "DESCRIPTION")
   expect_success(expect_s3_class(desc <- desc::description$new(res), "description"))
-  this_lock <- asNamespace("renv")$lockfile(lock)
-  expect_setequal(names(this_lock$data()$Packages), desc$get_deps()$package)
+  this_lock <- get_lockfile(lock) # asNamespace("renv")$lockfile(lock)
+  expect_setequal(names(this_lock$Packages), desc$get_deps()$package)
 
 })

@@ -1,3 +1,10 @@
+# vise 0.0.0.9003
+
+* This package now requires {renv} version 0.17.3 or greater.
+* The shim for renv 0.17.1 has been replaced by a capture output command on the
+  initial update check. Because {renv} >= 0.17.1 now prints to stdout instead
+  of stderr, it simplifies the code a bit.
+
 # vise 0.0.0.9002
 
 * a random delimiter is set for setting github output parameters

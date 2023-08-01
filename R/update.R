@@ -12,7 +12,7 @@
 #'   indicates whether or not the existing packages should be updated.
 #' @param repos the repositories to use in the search.
 #' @export
-ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = NULL) {
+ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = NULL) {
 
   n <- 0
   the_report <- character(0)
@@ -20,7 +20,7 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   Sys.setenv("RENV_PROFILE" = profile)
   lib  <- renv::paths$library()
   lock <- renv::paths$lockfile()
-  current_lock <- lockfile(lock)$data()
+  current_lock <- get_lockfile(lock)
   on_linux <- Sys.info()[["sysname"]] == "Linux"
   if (!is.null(repos))
     options(repos = repos)
@@ -41,22 +41,24 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
     ci_new_pkgs_sysreqs(hydra$missing)
     hydra <- renv::hydrate(library = lib, update = FALSE)
   }
-  new_lock    <- renv::snapshot(library = lib, lockfile = lock)
+  # The first snapshot captures the packages that were added during hydrate and
+  # it will also capture the packages that were removed in the prose
+  snap_report <- utils::capture.output(new_lock <- renv::snapshot(library = lib, lockfile = lock))
+  snap_report <- snap_report[startsWith(trimws(snap_report), "-")]
+
   sneaky_pkgs <- setdiff(names(new_lock$Packages), names(current_lock$Packages))
-  if (length(sneaky_pkgs)) {
-    these <- new_lock$Packages[sneaky_pkgs]
-    pkg_info <- function(i) {
-      lead <- "- "
-      paste0(lead, i$Package, '\t[* -> ', i$Version, ']')
-    }
-    pkgs <- vapply(these, FUN = pkg_info, FUN.VALUE = character(1))
-    if (on_linux) {
-      ci_sysreqs(lock, execute = TRUE)
-    }
+  have_new_pkgs <- length(sneaky_pkgs)
+  removed_some_pkgs <- length(head(snap_report, -1L))
+  # When we are on linux, we have to make sure to install the system
+  # requirements for any new packages that come along
+  if (on_linux && have_new_pkgs) {
+    ci_sysreqs(lock, execute = TRUE)
+  }
+  if (have_new_pkgs || removed_some_pkgs) {
     n <- n + length(sneaky_pkgs)
     the_report <- c(the_report, 
-      "# NEW ================================",
-      pkgs,
+      "# NEW OR REMOVED PACKAGES -------------------------------",
+      head(snap_report, -1L), # to get rid of lockfile report
       ""
     )
     cat(n, "packages found", paste(sneaky_pkgs, collapse = ", "), "\n")
@@ -74,38 +76,33 @@ ci_update <- function(profile = 'lesson-requirments', update = 'true', repos = N
   if (updates_needed) {
     # apply the updates and run a snapshot if the dry run found updates
     renv::update(library = lib)
-    renv::snapshot(lockfile = lock)
-    n <- n + length(updates$diff)
-    # workaround as the print method for this class was removed in 0.17.1
-    if (packageVersion("renv") >= "0.17.1") {
-      print.renv_updates <- function(x, ...) {
-        ns <- asNamespace("renv")
-        ns$renv_updates_report(x$diff, x$old, x$new)
-      }
+    # The update report has some noise from the snapshot, so we need to clean
+    # it up by removing the header (that starts before the `# CRAN` signifier)
+    # and the footer that starts with ` - Lockfile written to`
+    update_report <- utils::capture.output(renv::snapshot(lockfile = lock))
+    header <- which(startsWith(trimws(update_report), "#"))
+    if (length(header)) {
+      header <- seq(min(header) - 1L)
     }
-    the_report <- c(the_report, 
-      utils::capture.output(print(updates), type = "message"))
-    cat("Updating", length(updates$diff), "packages", "\n")
+    footer <- seq(which(startsWith(trimws(update_report), "- Lockfile")),
+      length(update_report))
+    update_report <- update_report[-c(header, footer)]
+
+    # We can detect the number of updated packages via checking the number of
+    # ticks the output has. This is crude, but the updates from 
+    # renv::update(check = TRUE) no longer gives us an accurate count because
+    # it also counts packages that were accidentally inserted.
+    n_updates <- sum(startsWith(trimws(update_report), "-"))
+    n <- n + n_updates
+    the_report <- c(the_report, update_report)
+    cat("Updating", n_updates, "packages", "\n")
     cat("::endgroup::\n")
   }
   cat("::group::Cleaning the cache\n")
   renv::clean(actions = c('package.locks', 'library.tempdirs', 'unused.packages'))
   cat("::endgroup::\n")
   # Construct the output -----------------------------------------------
-  # https://github.community/t/set-output-truncates-multiline-strings/16852/3?u=zkamvar
   cat("::group::Creating the output\n")
-  meow  <- function(name, thing) {
-    out <- Sys.getenv("GITHUB_OUTPUT")
-    if (length(thing) > 1L) {
-      # generating random delimiter for the output to avoid injection
-      # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
-      EOF <- paste(sample(c(letters, LETTERS, 0:9), 20, replace = TRUE), collapse = "")
-      cat(name, "<<", EOF, "\n", file = out, sep = "", append = TRUE)
-      cat(thing, EOF, file = out, sep = "\n", append = TRUE)
-    } else {
-      cat(name, "=", thing, "\n", file = out, sep = "", append = TRUE)
-    }
-  }
   meow("report", the_report)
   meow("n", n)
   meow("date", as.character(Sys.Date()))
