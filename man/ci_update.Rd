@@ -4,7 +4,7 @@
 \alias{ci_update}
 \title{Update Packages in a {renv} lockfile in GitHub Actions}
 \usage{
-ci_update(profile = "lesson-requirments", update = "true", repos = NULL)
+ci_update(profile = "lesson-requirements", update = "true", repos = NULL)
 }
 \arguments{
 \item{profile}{the profile of the renv project}
