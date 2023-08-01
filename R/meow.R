@@ -15,7 +15,7 @@
 #' @examples
 #' tmp <- tempfile()
 #' env <- Sys.getenv("GITHUB_OUTPUT", unset = "")
-#' on.exit(Sys.setenv("GITHUB_OUTPUT" = env)
+#' on.exit(Sys.setenv("GITHUB_OUTPUT" = env))
 #' Sys.setenv("GITHUB_OUTPUT" = tmp)
 #' meow("single", "hello!")
 #' meow("multi", c("This information", "exists on", "multiple lines"))
