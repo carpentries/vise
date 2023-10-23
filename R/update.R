@@ -53,7 +53,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
   print(hydra)
   # The first snapshot captures the packages that were added during hydrate and
   # it will also capture the packages that were removed in the prose
-  snap_report <- utils::capture.output(new_lock <- renv::snapshot(library = lib, lockfile = lock))
+  snap_report <- utils::capture.output(new_lock <- renv::snapshot(library = lib, lockfile = lock, force = TRUE))
   snap_report <- snap_report[startsWith(trimws(snap_report), "-")]
 
   sneaky_pkgs <- setdiff(names(new_lock$Packages), names(current_lock$Packages))
