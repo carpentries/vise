@@ -32,15 +32,24 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
 
   # Detect any new packages that entered the lesson --------------------
   cat("::group::Discovering new packages\n")
-  hydra <- renv::hydrate(library = lib, update = FALSE)
+  tryCatch({
+      hydra <- renv::hydrate(library = lib, update = TRUE)
+    },
+    error = function(e) {
+      cat("There was an error... trying again")
+      cat(e$message)
+    }
+  )
+  print(hydra)
   # if there are errors here, it might be because we did not account for them
   # when enumerating the system requirements. This accounts for that by 
   # attempting the sysreqs installation and then re-trying the hydration
   if (length(hydra$missing) && on_linux) { 
     cat("Some packages failed installation... attempting to find system requirements\n")
     ci_new_pkgs_sysreqs(hydra$missing)
-    hydra <- renv::hydrate(library = lib, update = FALSE)
+    hydra <- renv::hydrate(library = lib, update = TRUE)
   }
+  print(hydra)
   # The first snapshot captures the packages that were added during hydrate and
   # it will also capture the packages that were removed in the prose
   snap_report <- utils::capture.output(new_lock <- renv::snapshot(library = lib, lockfile = lock))
@@ -106,5 +115,6 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
   meow("report", the_report)
   meow("n", n)
   meow("date", as.character(Sys.Date()))
+  cat(Sys.getenv("GITHUB_OUTPUT"))
   cat("::endgroup::\n")
 }
