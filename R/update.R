@@ -27,7 +27,8 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
   if (on_linux)
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
-  shh <- utils::capture.output(renv::restore(library = lib, lockfile = lock))
+  # shh <- utils::capture.output(
+  print(renv::restore(library = lib, lockfile = lock))
   cat("::endgroup::\n")
 
   # Detect any new packages that entered the lesson --------------------
