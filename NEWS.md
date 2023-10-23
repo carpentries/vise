@@ -1,3 +1,8 @@
+# vise 0.0.0.9004
+
+* `ci_update()` now uses `renv::snapshot(force = TRUE)` to avoid spurious 
+  pre-flight validation errors (@zkamvar, #7)
+
 # vise 0.0.0.9003
 
 * This package now requires {renv} version 0.17.3 or greater.
