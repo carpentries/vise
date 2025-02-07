@@ -91,8 +91,8 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
     if (length(header)) {
       header <- seq(min(header) - 1L)
     }
-    footer <- seq(which(startsWith(trimws(update_report), "- Lockfile")),
-      length(update_report))
+    footer <- tryCatch(seq(which(startsWith(trimws(update_report), "- Lockfile")),
+      length(update_report)), error = function(e) length(update_report))
     update_report <- update_report[-c(header, footer)]
 
     # We can detect the number of updated packages via checking the number of
