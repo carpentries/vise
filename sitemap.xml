@@ -1,42 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://zkamvar.github.io/vise/404.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/index.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/ci_sysreqs.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/ci_update.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/lock2desc.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/meow.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/verify_simple_vector.html</loc>
-  </url>
-  <url>
-    <loc>https://zkamvar.github.io/vise/reference/vise-package.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://zkamvar.github.io/vise/404.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/LICENSE-text.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/LICENSE.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/authors.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/index.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/news/index.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/ci_sysreqs.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/ci_update.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/index.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/lock2desc.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/meow.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/verify_simple_vector.html</loc></url>
+<url><loc>https://zkamvar.github.io/vise/reference/vise-package.html</loc></url>
 </urlset>
+
