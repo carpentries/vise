@@ -8,15 +8,18 @@
 #' new packages, and updates existing packages.
 #'
 #' @param profile the profile of the renv project
-#' @param update a character vector of `'true'` (default) or `'false'`, which 
+#' @param update a character vector of `'true'` (default) or `'false'`, which
 #'   indicates whether or not the existing packages should be updated.
+#' @param skip_restore do not attempt to restore the renv.lock packages before hydration
+#'   (this can be useful to update broken or very old packages, or when R updates and
+#'   existing package versions cannot be restored)
 #' @param repos the repositories to use in the search.
 #' @export
-ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = NULL) {
+ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_restore = 'false', repos = NULL) {
 
   n <- 0
   the_report <- character(0)
-  cat("::group::Restoring package library\n")
+
   Sys.setenv("RENV_PROFILE" = profile)
   lib  <- renv::paths$library()
   lock <- renv::paths$lockfile()
@@ -27,8 +30,16 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
   if (on_linux)
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
-  rest <- renv::restore(library = lib, lockfile = lock)
-  cat("::endgroup::\n")
+
+  should_skip_restore <- as.logical(toupper(skip_restore))
+  if (should_skip_restore) {
+    cat("Skipping restore at user request\n")
+  }
+  else {
+    cat("::group::Restoring package library\n")
+    rest <- renv::restore(library = lib, lockfile = lock)
+    cat("::endgroup::\n")
+  }
 
   # Detect any new packages that entered the lesson --------------------
   cat("::group::Discovering new packages\n")
@@ -41,9 +52,9 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
     }
   )
   # if there are errors here, it might be because we did not account for them
-  # when enumerating the system requirements. This accounts for that by 
+  # when enumerating the system requirements. This accounts for that by
   # attempting the sysreqs installation and then re-trying the hydration
-  if (length(hydra$missing) && on_linux) { 
+  if (length(hydra$missing) && on_linux) {
     cat("Some packages failed installation... attempting to find system requirements\n")
     ci_new_pkgs_sysreqs(hydra$missing)
     hydra <- renv::hydrate(library = lib, update = TRUE)
@@ -63,7 +74,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
   }
   if (have_new_pkgs || removed_some_pkgs) {
     n <- n + length(sneaky_pkgs)
-    the_report <- c(the_report, 
+    the_report <- c(the_report,
       "# NEW OR REMOVED PACKAGES -------------------------------",
       head(snap_report, -1L), # to get rid of lockfile report
       ""
@@ -96,7 +107,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', repos = 
     update_report <- update_report[-c(header, footer)]
 
     # We can detect the number of updated packages via checking the number of
-    # ticks the output has. This is crude, but the updates from 
+    # ticks the output has. This is crude, but the updates from
     # renv::update(check = TRUE) no longer gives us an accurate count because
     # it also counts packages that were accidentally inserted.
     n_updates <- sum(startsWith(trimws(update_report), "-"))
