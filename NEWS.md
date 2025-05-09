@@ -1,3 +1,9 @@
+# vise 0.0.1.9000
+
+* `ci_update()` now accepts a skip_restore option to force lockfile updating
+  (@froggleston)
+
+
 # vise 0.0.0.9004
 
 * `ci_update()` now uses `renv::snapshot(force = TRUE)` to avoid spurious 

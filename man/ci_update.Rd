@@ -4,13 +4,22 @@
 \alias{ci_update}
 \title{Update Packages in a {renv} lockfile in GitHub Actions}
 \usage{
-ci_update(profile = "lesson-requirements", update = "true", repos = NULL)
+ci_update(
+  profile = "lesson-requirements",
+  update = "true",
+  skip_restore = "false",
+  repos = NULL
+)
 }
 \arguments{
 \item{profile}{the profile of the renv project}
 
 \item{update}{a character vector of \code{'true'} (default) or \code{'false'}, which
 indicates whether or not the existing packages should be updated.}
+
+\item{skip_restore}{do not attempt to restore the renv.lock packages before hydration
+(this can be useful to update broken or very old packages, or when R updates and
+existing package versions cannot be restored)}
 
 \item{repos}{the repositories to use in the search.}
 }
