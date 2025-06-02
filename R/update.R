@@ -34,6 +34,11 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
   should_skip_restore <- as.logical(toupper(skip_restore))
   if (should_skip_restore) {
     cat("Skipping restore at user request\n")
+
+    uses_bioc <- current_lock$Bioconductor
+    if (!is.null(uses_bioc)) {
+      renv::init(bioconductor = TRUE, profile = profile)
+    }
   }
   else {
     cat("::group::Restoring package library\n")
