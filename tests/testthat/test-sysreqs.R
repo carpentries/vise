@@ -7,9 +7,11 @@ test_that("ci_sysreqs will detect the requirements for a knitr lockfile", {
   lock <- system.file("renv.lock", package = "vise")
   # The system requirements for a typical {knitr} installation
   res <- vise::ci_sysreqs(lock, execute = FALSE)
+  if (length(res$packages$system_packages) == 0) {
+    skip("libicu-dev already installed")
+  }
   expect_match(res$install_scripts, "apt-get -y install libicu-dev")
 })
-
 
 test_that("ci_sysreqs will skip reqs if requested", {
   skip_if_offline()

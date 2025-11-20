@@ -52,13 +52,17 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   cat(paste(pak::repo_status()$name, " [", pak::repo_status()$url), "]\n")
   cat("::endgroup::\n")
 
-  reqs <- pak::pkg_sysreqs(dirname(desc))
+  d <- desc::description$new(desc)
+  imports <- d$get_deps()
+  pkg_names <- imports$package[imports$type == "Imports"]
+  reqs <- pak::pkg_sysreqs(pkg_names)
+
   # exclude packages that we already have on the system
   for (e in paste0("\\b", exclude, "\\b")) {
     reqs <- reqs[!grepl(e, reqs)]
   }
 
-  if (length(reqs) == 0) {
+  if (length(reqs$packages$system_packages) == 0) {
     cat("No system dependencies to install\n")
     return(reqs)
   }
