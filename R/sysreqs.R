@@ -1,6 +1,6 @@
 #' detect and execute system requirements from a lockfile
 #'
-#' This function converts a renv lockfile to a description file and then 
+#' This function converts a renv lockfile to a description file and then
 #' determines the system requirements via [remotes::system_requirements()] using
 #' the RStudio online resource. This is intended to be run on continuous
 #' integration, so will probably error on macos and windows
@@ -51,7 +51,9 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     if (ver[1] == "ubuntu") system("sudo apt-get update")
     for (r in reqs) {
       su <- if (sudo) "sudo" else ""
-      system(trimws(paste(su, r)))
+      ex_cmd <- trimws(paste(su, r))
+      cat("INSTALLING: [", ex_cmd, "]\n")
+      system(ex_cmd)
     }
   }
   #nocov end
