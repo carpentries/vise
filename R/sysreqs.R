@@ -52,11 +52,13 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   d <- desc::description$new(desc)
   imports <- d$get_deps()
   pkg_names <- imports$package[imports$type == "Imports"]
-  reqs <- pak::pkg_sysreqs(pkg_names, dependencies = TRUE)
+  reqs <- pak::pkg_sysreqs(pkg_names, upgrade = TRUE, dependencies = NA)
 
-  # exclude packages that we already have on the system
-  for (e in paste0("\\b", exclude, "\\b")) {
-    reqs <- reqs[!grepl(e, reqs)]
+  for (ex in exclude) {
+    to_remove <- which(reqs$packages$system_packages == ex)
+    if (length(to_remove) > 0) {
+      reqs$packages <- reqs$packages[-to_remove, , drop = FALSE]
+    }
   }
 
   if (length(reqs$packages$system_packages) == 0) {
@@ -66,8 +68,9 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
   cat("Installing system dependencies:", paste(reqs$packages$system_packages, collapse = ", "), "\n")
   if (execute) {
-    system(reqs$pre_install)
-    system(reqs$install_scripts)
+    su <- if (sudo) "sudo" else ""
+    system(trimws(paste(su, reqs$pre_install)))
+    system(trimws(paste(su, reqs$install_scripts)))
   }
 
   #nocov end
