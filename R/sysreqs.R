@@ -22,9 +22,6 @@
 #' }
 ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc")) {
   # convert the lockfile to a temporary DESCRIPTION file
-  if (!requireNamespace("remotes", quietly = TRUE)) {
-    stop("The {remotes} package is required for this function.")
-  }
   desc <- lock2desc(lockfile)
   ver  <- tolower(system("lsb_release -irs", intern = TRUE))
   print(ver)
@@ -55,7 +52,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   d <- desc::description$new(desc)
   imports <- d$get_deps()
   pkg_names <- imports$package[imports$type == "Imports"]
-  reqs <- pak::pkg_sysreqs(pkg_names)
+  reqs <- pak::pkg_sysreqs(pkg_names, dependencies = TRUE)
 
   # exclude packages that we already have on the system
   for (e in paste0("\\b", exclude, "\\b")) {
