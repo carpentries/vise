@@ -28,34 +28,47 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   desc <- lock2desc(lockfile)
   ver  <- tolower(system("lsb_release -irs", intern = TRUE))
   print(ver)
-  reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
 
+  if (!requireNamespace("pak", quietly = TRUE)) {
+    install.packages("pak")
+  }
+
+  cat("::group::Register Repositories\n")
+  on_linux <- Sys.info()[["sysname"]] == "Linux"
+  if (on_linux) {
+    if (Sys.getenv("RSPM") == "") {
+      release <- system("lsb_release -c | awk '{print $2}'", intern = TRUE)
+      Sys.setenv("RSPM" =
+      paste0("https://packagemanager.posit.co/all/__linux__/", release, "/latest"))
+    }
+  }
+  repos <- list(
+    RSPM        = Sys.getenv("RSPM"),
+    carpentries = "https://carpentries.r-universe.dev/",
+    CRAN        = "https://cran.rstudio.com"
+  )
+  options(pak.no_extra_messages = TRUE, repos = repos)
+  cat("Repositories Used\n")
+  cat(paste(pak::repo_status()$name, " [", pak::repo_status()$url), "]\n")
+  cat("::endgroup::\n")
+
+  reqs <- pak::pkg_sysreqs(dirname(desc))
   # exclude packages that we already have on the system
   for (e in paste0("\\b", exclude, "\\b")) {
     reqs <- reqs[!grepl(e, reqs)]
   }
 
   if (length(reqs) == 0) {
+    cat("No system dependencies to install\n")
     return(reqs)
   }
 
-  # on ubuntu, we can assume apt, so we can compress this to a single call
-  if (ver[1] == "ubuntu") {
-    nz <- nzchar(reqs)
-    deps <- paste(substring(reqs[nz], 20, nchar(reqs[nz])), collapse = " ")
-    reqs <- paste("apt-get install -y", deps)
+  cat("Installing system dependencies:", paste(reqs$packages$system_packages, collapse = ", "), "\n")
+  if (execute) {
+    system(reqs$pre_install)
+    system(reqs$install_scripts)
   }
 
-  #nocov start
-  if (execute) {
-    if (ver[1] == "ubuntu") system("sudo apt-get update")
-    for (r in reqs) {
-      su <- if (sudo) "sudo" else ""
-      ex_cmd <- trimws(paste(su, r))
-      cat("INSTALLING: [", ex_cmd, "]\n")
-      system(ex_cmd)
-    }
-  }
   #nocov end
   return(reqs)
 }
