@@ -1,12 +1,12 @@
 #' detect and execute system requirements from a lockfile
 #'
 #' This function converts a renv lockfile to a description file and then
-#' determines the system requirements via [remotes::system_requirements()] using
+#' determines the system requirements via [pak::pkg_sysreqs()] using
 #' the RStudio online resource. This is intended to be run on continuous
-#' integration, so will probably error on macos and windows
+#' integration, so will error on MacOS and Windows
 #'
 #' @param lockfile the path to a {renv} lockfile
-#' @param execute if `TRUE` (default), the commands from [remotes::system_requirements()]
+#' @param execute if `TRUE` (default), the commands from [pak::pkg_sysreqs()]
 #'   will be executed via [base::system()].
 #' @param sudo if `TRUE` (default), the command runs as root
 #' @param exclude packages to exclude from installation because they already
@@ -77,6 +77,17 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   return(reqs)
 }
 
+#' convert a list of packages into a description file and detect system requirements
+#'
+#' This function converts a set of R package names to a description file and then
+#' passes this to [ci_sysreqs()] for system requirements detection.
+#'
+#' @param pkgs the list of packages, each an element with a `package` field
+#' @export
+#' @examples
+#' missing <- list(list(package = "knitr"), list(package = "rmarkdown"))
+#'
+#' vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE))
 ci_new_pkgs_sysreqs <- function(pkgs, ...) {
   d <- desc::description$new("!new")
   for (pkg in pkgs) {
