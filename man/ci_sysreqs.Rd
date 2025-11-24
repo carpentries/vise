@@ -14,7 +14,7 @@ ci_sysreqs(
 \arguments{
 \item{lockfile}{the path to a {renv} lockfile}
 
-\item{execute}{if \code{TRUE} (default), the commands from \code{\link[remotes:system_requirements]{remotes::system_requirements()}}
+\item{execute}{if \code{TRUE} (default), the commands from \code{\link[pak:pkg_sysreqs]{pak::pkg_sysreqs()}}
 will be executed via \code{\link[base:system]{base::system()}}.}
 
 \item{sudo}{if \code{TRUE} (default), the command runs as root}
@@ -27,9 +27,9 @@ a vector of exectutible system calls to install the dependencies
 }
 \description{
 This function converts a renv lockfile to a description file and then
-determines the system requirements via \code{\link[remotes:system_requirements]{remotes::system_requirements()}} using
+determines the system requirements via \code{\link[pak:pkg_sysreqs]{pak::pkg_sysreqs()}} using
 the RStudio online resource. This is intended to be run on continuous
-integration, so will probably error on macos and windows
+integration, so will error on MacOS and Windows
 }
 \examples{
 lock <- system.file("renv.lock", package = "vise")

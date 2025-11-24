@@ -5,12 +5,14 @@
 > 
 > https://en.wikipedia.org/wiki/Vise
 
-The {vise} package is a thin wrapper around {renv}, {desc}, and {remotes} that
+The {vise} package is a thin wrapper around {renv}, {desc}, and {pak} that
 is designed to manage and update renv lockfiles in a project. This explicitly
 works with The Carpentries lessons, but could be extended for other use.
 
 ## Features
 
+- `ci_new_pkgs_sysreqs()` create a description file on the fly from a set of 
+  package names, which are then passed to `ci_sysreqs()`.
 - `ci_sysreqs()` gather and install system requirements from a {renv} lockfile
   that de-duplicates the system calls and uses a single command.
 - `ci_update()` updates a lockfile in two ways: 1. scans project for new

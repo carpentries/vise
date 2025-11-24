@@ -17,7 +17,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Zhian N. Kamvar \email{zkamvar@gmail.com} (\href{https://orcid.org/0000-0003-1458-7108}{ORCID})
+\strong{Maintainer}: Robert Davey \email{robertdavey@carpentries.org} (\href{https://orcid.org/0000-0002-5589-7754}{ORCID})
+
+Authors:
+\itemize{
+  \item Zhian N. Kamvar \email{zkamvar@gmail.com} (\href{https://orcid.org/0000-0003-1458-7108}{ORCID})
+}
 
 }
 \keyword{internal}
