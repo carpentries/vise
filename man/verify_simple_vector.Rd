@@ -20,7 +20,7 @@ so this function will thrown an error if the submitted R expression is
 anything but a vector created with \code{c()},
 }
 \examples{
-# simple vectors work. 
+# simple vectors work.
 try(vise::verify_simple_vector(c(1, "a", c(TRUE, FALSE))))
 
 # vectors using any other function fail, even if they are harmless

@@ -8,13 +8,17 @@ ci_new_pkgs_sysreqs(pkgs, ...)
 }
 \arguments{
 \item{pkgs}{the list of packages, each an element with a \code{package} field}
+
+\item{...}{extra options to be passed to ci_sysreqs()`}
 }
 \description{
 This function converts a set of R package names to a description file and then
 passes this to \code{\link[=ci_sysreqs]{ci_sysreqs()}} for system requirements detection.
 }
 \examples{
-missing <- list(list(package = "knitr"), list(package = "rmarkdown"))
+Sys.setenv(R_USER_CACHE_DIR = tempfile())
 
-vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE))
+pkgs <- list(list(package = "knitr", package = "rmarkdown"))
+
+vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
 }

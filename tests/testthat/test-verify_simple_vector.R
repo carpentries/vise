@@ -1,9 +1,9 @@
 test_that("unsimple vectors will throw errors", {
-  
+
   skip_on_ci()
-  expect_error(vise::verify_simple_vector(inputs = c(print("a"))), "::error::repository settings should be an R vector.")
-  expect_error(vise::verify_simple_vector(inputs = c(stop("a"))), "::error::repository settings should be an R vector.")
-  expect_error(vise::verify_simple_vector(inputs = c(system("lsb_release -a", intern = TRUE))), "::error::repository settings should be an R vector.")
+  expect_error(vise::verify_simple_vector(inputs = c(print("a"))), "repository settings should be an R vector")
+  expect_error(vise::verify_simple_vector(inputs = c(stop("a"))), "repository settings should be an R vector")
+  expect_error(vise::verify_simple_vector(inputs = c(system("lsb_release -a", intern = TRUE))), "repository settings should be an R vector")
 
 })
 
