@@ -110,8 +110,9 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 #' Sys.setenv(R_USER_CACHE_DIR = tempfile())
 #'
 #' pkgs <- list(list(package = "knitr", package = "rmarkdown"))
-#'
-#' vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
+#' if (startsWith(tolower(R.version$os), "linux")) {
+#'   vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
+#' }
 ci_new_pkgs_sysreqs <- function(pkgs, ...) {
   d <- desc::description$new("!new")
   for (pkg in pkgs) {

@@ -19,6 +19,7 @@ passes this to \code{\link[=ci_sysreqs]{ci_sysreqs()}} for system requirements d
 Sys.setenv(R_USER_CACHE_DIR = tempfile())
 
 pkgs <- list(list(package = "knitr", package = "rmarkdown"))
-
-vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
+if (startsWith(tolower(R.version$os), "linux")) {
+  vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
+}
 }
