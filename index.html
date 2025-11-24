@@ -53,11 +53,13 @@
 <p>A vise or vice is a mechanical apparatus used to secure an object to allow work to be performed on it.</p>
 <p><a href="https://en.wikipedia.org/wiki/Vise" class="external-link uri">https://en.wikipedia.org/wiki/Vise</a></p>
 </blockquote>
-<p>The {vise} package is a thin wrapper around {renv}, {desc}, and {remotes} that is designed to manage and update renv lockfiles in a project. This explicitly works with The Carpentries lessons, but could be extended for other use.</p>
+<p>The {vise} package is a thin wrapper around {renv}, {desc}, and {pak} that is designed to manage and update renv lockfiles in a project. This explicitly works with The Carpentries lessons, but could be extended for other use.</p>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
 <ul>
+<li>
+<code><a href="reference/ci_new_pkgs_sysreqs.html">ci_new_pkgs_sysreqs()</a></code> create a description file on the fly from a set of package names, which are then passed to <code><a href="reference/ci_sysreqs.html">ci_sysreqs()</a></code>.</li>
 <li>
 <code><a href="reference/ci_sysreqs.html">ci_sysreqs()</a></code> gather and install system requirements from a {renv} lockfile that de-duplicates the system calls and uses a single command.</li>
 <li>
@@ -118,7 +120,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
