@@ -36,7 +36,7 @@ if (startsWith(tolower(R.version$os), "linux")) {
 #> RSPM  [ https://packagemanager.posit.co/cran/__linux__/noble/latest carpentries  [ https://carpentries.r-universe.dev/ CRAN.CRAN  [ https://cran.rstudio.com BioCsoft  [ https://bioconductor.org/packages/3.22/bioc BioCann  [ https://bioconductor.org/packages/3.22/data/annotation BioCexp  [ https://bioconductor.org/packages/3.22/data/experiment BioCworkflows  [ https://bioconductor.org/packages/3.22/workflows BioCbooks  [ https://bioconductor.org/packages/3.22/books ]
 #> ::endgroup::
 #> 
-#> ✔ Updated metadata database: 5.72 MB in 11 files.
+#> ✔ Updated metadata database: 5.73 MB in 11 files.
 #> 
 #> ℹ Updating metadata database
 #> ✔ Updating metadata database ... done

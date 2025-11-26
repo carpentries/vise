@@ -57,7 +57,7 @@ if (startsWith(tolower(R.version$os), "linux")) {
 #> Repositories Used
 #> RSPM  [ https://packagemanager.posit.co/cran/__linux__/noble/latest carpentries  [ https://carpentries.r-universe.dev/ CRAN.CRAN  [ https://cran.rstudio.com BioCsoft  [ https://bioconductor.org/packages/3.22/bioc BioCann  [ https://bioconductor.org/packages/3.22/data/annotation BioCexp  [ https://bioconductor.org/packages/3.22/data/experiment BioCworkflows  [ https://bioconductor.org/packages/3.22/workflows BioCbooks  [ https://bioconductor.org/packages/3.22/books ]
 #> ::endgroup::
-#> Excluding system packages: make, pandoc 
+#> Excluding system packages: pandoc 
 #> ── Install scripts ───────────────────────────────────────────── Ubuntu 24.04 ──
 #> apt-get -y update
 #> apt-get -y install libicu-dev
