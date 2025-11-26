@@ -13,7 +13,8 @@ ci_sysreqs(
   lockfile,
   execute = TRUE,
   sudo = TRUE,
-  exclude = c("git", "make", "pandoc")
+  exclude = c("git", "make", "pandoc"),
+  use_pak = FALSE
 )
 ```
 
@@ -39,6 +40,11 @@ ci_sysreqs(
   packages to exclude from installation because they already exist on
   the system.
 
+- use_pak:
+
+  if `TRUE`, use the `pak` package to determine system requirements.
+  Else, remotes.
+
 ## Value
 
 a vector of exectutible system calls to install the dependencies
@@ -53,15 +59,5 @@ if (startsWith(tolower(R.version$os), "linux")) {
   print(vise::ci_sysreqs(lock, execute = FALSE))
 }
 #> [1] "ubuntu" "24.04" 
-#> ::group::Register Repositories
-#> Repositories Used
-#> RSPM  [ https://packagemanager.posit.co/cran/__linux__/noble/latest carpentries  [ https://carpentries.r-universe.dev/ CRAN.CRAN  [ https://cran.rstudio.com BioCsoft  [ https://bioconductor.org/packages/3.22/bioc BioCann  [ https://bioconductor.org/packages/3.22/data/annotation BioCexp  [ https://bioconductor.org/packages/3.22/data/experiment BioCworkflows  [ https://bioconductor.org/packages/3.22/workflows BioCbooks  [ https://bioconductor.org/packages/3.22/books ]
-#> ::endgroup::
-#> Excluding system packages: pandoc 
-#> ── Install scripts ───────────────────────────────────────────── Ubuntu 24.04 ──
-#> apt-get -y update
-#> apt-get -y install libicu-dev
-#> 
-#> ── Packages and their system dependencies ──────────────────────────────────────
-#> stringi – libicu-dev
+#> [1] "apt-get install -y libicu-dev"
 ```

@@ -31,21 +31,5 @@ if (startsWith(tolower(R.version$os), "linux")) {
   vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
 }
 #> [1] "ubuntu" "24.04" 
-#> ::group::Register Repositories
-#> Repositories Used
-#> RSPM  [ https://packagemanager.posit.co/cran/__linux__/noble/latest carpentries  [ https://carpentries.r-universe.dev/ CRAN.CRAN  [ https://cran.rstudio.com BioCsoft  [ https://bioconductor.org/packages/3.22/bioc BioCann  [ https://bioconductor.org/packages/3.22/data/annotation BioCexp  [ https://bioconductor.org/packages/3.22/data/experiment BioCworkflows  [ https://bioconductor.org/packages/3.22/workflows BioCbooks  [ https://bioconductor.org/packages/3.22/books ]
-#> ::endgroup::
-#> 
-#> ✔ Updated metadata database: 5.73 MB in 11 files.
-#> 
-#> ℹ Updating metadata database
-#> ✔ Updating metadata database ... done
-#> 
-#> Excluding system packages: pandoc 
-#> No system dependencies to install
-#> ── Install scripts ───────────────────────────────────────────── Ubuntu 24.04 ──
-#> apt-get -y update
-#> 
-#> 
-#> ── Packages and their system dependencies ──────────────────────────────────────
+#> character(0)
 ```
