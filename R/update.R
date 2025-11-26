@@ -10,12 +10,15 @@
 #' @param profile the profile of the renv project
 #' @param update a character vector of `'true'` (default) or `'false'`, which
 #'   indicates whether or not the existing packages should be updated.
-#' @param skip_restore do not attempt to restore the renv.lock packages before hydration
-#'   (this can be useful to update broken or very old packages, or when R updates and
-#'   existing package versions cannot be restored)
+#' @param force_renv_init a character vector of `'true'` or `'false'` (default), to
+#'   force the re-initialization of renv even if a lockfile exists.
+#'   This can be useful if you want to ensure that Bioconductor
+#'   packages are properly initialized. This can also be useful to update
+#'   broken or very old packages, or when R updates and existing package versions
+#'   cannot be restored.
 #' @param repos the repositories to use in the search.
 #' @export
-ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_restore = 'false', repos = NULL) {
+ci_update <- function(profile = 'lesson-requirements', update = 'true', force_renv_init = 'false', repos = NULL) {
 
   n <- 0
   the_report <- character(0)
@@ -31,20 +34,15 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
 
-  should_skip_restore <- as.logical(toupper(skip_restore))
-  if (should_skip_restore) {
-    cat("Skipping first-pass restore at user request\n")
+  should_force_renv_init <- as.logical(toupper(force_renv_init))
+  if (should_force_renv_init) {
+    cat("Forcing renv initialisation at user request\n")
 
     uses_bioc <- current_lock$Bioconductor
     if (!is.null(uses_bioc)) {
       renv::init(bioconductor = TRUE, profile = profile)
     }
   }
-#   else {
-#     cat("::group::Restoring package library\n")
-#     rest <- renv::restore(library = lib, lockfile = lock)
-#     cat("::endgroup::\n")
-#   }
 
   # Detect any new packages that entered the lesson --------------------
   cat("::group::Discovering new packages\n")
