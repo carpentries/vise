@@ -59,42 +59,42 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
     # for each of the packages in exclude, drop it from reqs
     if (length(exclude) > 0 && length(reqs$packages$system_packages) > 0) {
-        to_exclude <- intersect(reqs$packages$system_packages, exclude)
-        if (length(to_exclude) > 0) {
+      to_exclude <- intersect(reqs$packages$system_packages, exclude)
+      if (length(to_exclude) > 0) {
         cat("Excluding system packages:", paste(to_exclude, collapse = ", "), "\n")
 
-                # drop the excluded package rows from the system_packages
+        # drop the excluded package rows from the system_packages
         for (ex in to_exclude) {
-            to_remove <- which(reqs$packages$system_packages == ex)
-            if (length(to_remove) > 0) {
+          to_remove <- which(reqs$packages$system_packages == ex)
+          if (length(to_remove) > 0) {
             reqs$packages <- reqs$packages[-to_remove, , drop = FALSE]
-            }
+          }
         }
 
         # remove the excluded packages from the reqs$install_scripts
         req_list <- unlist(
-            strsplit(reqs$install_scripts, " ")
+          strsplit(reqs$install_scripts, " ")
         )
         # drop the first three elements which are apt-get, -y, install
         req_list <- req_list[-c(1:3)]
         req_list <- req_list[!req_list %in% to_exclude]
         if (length(req_list) == 0) {
-            reqs$install_scripts <- ""
+          reqs$install_scripts <- ""
         } else {
-            reqs$install_scripts <- paste("apt-get -y install", paste(req_list, collapse = " "))
+          reqs$install_scripts <- paste("apt-get -y install", paste(req_list, collapse = " "))
         }
-        }
+      }
     }
 
     if (length(reqs$packages$system_packages) == 0) {
-        cat("No system dependencies to install\n")
-        return(reqs)
+      cat("No system dependencies to install\n")
+      return(reqs)
     }
 
     if (execute) {
-        su <- if (sudo) "sudo" else ""
-        system(trimws(paste(su, reqs$pre_install)))
-        system(trimws(paste(su, reqs$install_scripts)))
+      su <- if (sudo) "sudo" else ""
+      system(trimws(paste(su, reqs$pre_install)))
+      system(trimws(paste(su, reqs$install_scripts)))
     }
   }
   else {
