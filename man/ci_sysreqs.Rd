@@ -8,7 +8,8 @@ ci_sysreqs(
   lockfile,
   execute = TRUE,
   sudo = TRUE,
-  exclude = c("git", "make", "pandoc")
+  exclude = c("git", "make", "pandoc"),
+  use_pak = FALSE
 )
 }
 \arguments{
@@ -21,7 +22,9 @@ will be executed via \code{\link[base:system]{base::system()}}.}
 
 \item{exclude}{packages to exclude from installation because they already
 exist on the system.}
-}
+
+\item{use_pak}{if \code{TRUE}, use the \code{pak} package to determine system requirements. Else, remotes.}}
+
 \value{
 a vector of exectutible system calls to install the dependencies
 }
