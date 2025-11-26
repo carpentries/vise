@@ -63,6 +63,14 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     cat("Some packages failed installation... attempting to find system requirements\n")
     ci_new_pkgs_sysreqs(hydra$missing)
     hydra <- renv::hydrate(library = lib, update = TRUE)
+
+    if (length(hydra$missing)) {
+      # force install of missing packages
+      pkgs_to_install <- vapply(hydra$missing, function(pkg) pkg$package, character(1))
+
+      cat("Forcing installation of missing packages:", paste(pkgs_to_install, collapse = ", "), "\n")
+      renv::install(pkgs_to_install, library = lib)
+    }
   }
   # The first snapshot captures the packages that were added during hydrate and
   # it will also capture the packages that were removed in the prose
