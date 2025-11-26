@@ -27,7 +27,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   print(ver)
 
   if (!requireNamespace("pak", quietly = TRUE)) {
-    utils::install.packages("pak")
+    utils::install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
   }
 
   cat("::group::Register Repositories\n")
