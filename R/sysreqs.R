@@ -52,7 +52,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
   d <- desc::description$new(desc)
   imports <- d$get_deps()
   pkg_names <- imports$package[imports$type == "Imports"]
-  reqs <- pak::pkg_sysreqs(pkg_names, upgrade = TRUE, dependencies = NA)
+  reqs <- pak::pkg_sysreqs(pkg_names)
 
   # for each of the packages in exclude, drop it from reqs
   if (length(exclude) > 0 && length(reqs$packages$system_packages) > 0) {
