@@ -11,6 +11,7 @@
 #' @param sudo if `TRUE` (default), the command runs as root
 #' @param exclude packages to exclude from installation because they already
 #'   exist on the system.
+#' @param use_pak if `TRUE`, use the `pak` package to determine system requirements. Else, remotes.
 #' @return a vector of exectutible system calls to install the dependencies
 #' @export
 #' @examples
@@ -28,6 +29,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
   if (use_pak) {
     if (!requireNamespace("pak", quietly = TRUE)) {
+        # install binary pak
         utils::install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
     }
 
