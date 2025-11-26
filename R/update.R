@@ -65,11 +65,18 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     hydra <- renv::hydrate(library = lib, update = TRUE)
 
     if (length(hydra$missing)) {
-      # force install of missing packages
       pkgs_to_install <- vapply(hydra$missing, function(pkg) pkg$package, character(1))
+      for (pkg_name in pkgs_to_install) {
+        pkg_info <- current_lock$Packages[[pkg_name]]
 
-      cat("Forcing installation of missing packages:", paste(pkgs_to_install, collapse = ", "), "\n")
-      renv::install(pkgs_to_install, library = lib)
+        if (!is.null(pkg_info$Source) && pkg_info$Source == "GitHub") {
+          cat("Trying GitHub for:", paste(pkg_name, collapse = ", "), "\n")
+          ref <- sprintf("%s/%s", pkg_info$RemoteUsername, pkg_info$RemoteRepo)
+          renv::install(ref, library = lib)
+        } else {
+          renv::install(pkg_name, library = lib)
+        }
+      }
     }
   }
   # The first snapshot captures the packages that were added during hydrate and
