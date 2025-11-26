@@ -126,16 +126,17 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
     #nocov start
     if (execute) {
-      if (ver[1] == "ubuntu") system("sudo apt-get update")
+      su <- if (sudo) "sudo" else ""
+      if (ver[1] == "ubuntu") {
+        system(trimws(paste(su, "apt-get update")))
+      }
 
       for (ppa_r in ppa_reqs) {
-        su <- if (sudo) "sudo" else ""
-        system(trimws(paste(su, r)))
+        system(trimws(paste(su, ppa_r)))
       }
 
       for (pkg_r in reqs) {
-        su <- if (sudo) "sudo" else ""
-        system(trimws(paste(su, r)))
+        system(trimws(paste(su, pkg_r)))
       }
     }
   }
