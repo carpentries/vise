@@ -55,7 +55,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     d <- desc::description$new(desc)
     imports <- d$get_deps()
     pkg_names <- imports$package[imports$type == "Imports"]
-    reqs <- pak::pkg_sysreqs(pkg_names, upgrade = TRUE, dependencies = NA)
+    reqs <- pak::pkg_sysreqs(pkg_names)
 
     # for each of the packages in exclude, drop it from reqs
     if (length(exclude) > 0 && length(reqs$packages$system_packages) > 0) {
@@ -105,9 +105,12 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
     reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
 
+    pkg_reqs <- reqs[grepl("^apt-get.*install", reqs)]
+    ppa_reqs <- reqs[grepl("add-apt-repository|ppa:|r-cran-|r-bioc-", reqs)]
+
     # exclude packages that we already have on the system
     for (e in paste0("\\b", exclude, "\\b")) {
-      reqs <- reqs[!grepl(e, reqs)]
+      reqs <- pkg_reqs[!grepl(e, pkg_reqs)]
     }
 
     if (length(reqs) == 0) {
@@ -124,7 +127,13 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     #nocov start
     if (execute) {
       if (ver[1] == "ubuntu") system("sudo apt-get update")
-      for (r in reqs) {
+
+      for (ppa_r in ppa_reqs) {
+        su <- if (sudo) "sudo" else ""
+        system(trimws(paste(su, r)))
+      }
+
+      for (pkg_r in reqs) {
         su <- if (sudo) "sudo" else ""
         system(trimws(paste(su, r)))
       }
