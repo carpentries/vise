@@ -108,19 +108,18 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     pkg_reqs <- reqs[grepl("^apt-get.*install", reqs)]
     ppa_reqs <- reqs[grepl("add-apt-repository|ppa:|r-cran-|r-bioc-", reqs)]
 
-    # exclude packages that we already have on the system
-    for (e in paste0("\\b", exclude, "\\b")) {
-      reqs <- pkg_reqs[!grepl(e, pkg_reqs)]
-    }
-
-    if (length(reqs) == 0) {
-      return(reqs)
-    }
-
     # on ubuntu, we can assume apt, so we can compress this to a single call
     if (ver[1] == "ubuntu") {
       nz <- nzchar(reqs)
-      deps <- paste(substring(reqs[nz], 20, nchar(reqs[nz])), collapse = " ")
+      deps_list <- substring(reqs[nz], 20, nchar(reqs[nz]))
+      to_install <- setdiff(deps_list, exclude)
+
+      if (length(to_install) == 0) {
+        cat("No system dependencies to install\n")
+        return(to_install)
+      }
+
+      deps <- paste(to_install, collapse = " ")
       reqs <- paste("apt-get install -y", deps)
     }
 

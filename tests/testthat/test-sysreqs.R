@@ -18,7 +18,7 @@ test_that("ci_sysreqs will detect the requirements for a knitr lockfile", {
 
     expect_match(res$install_scripts, "apt-get -y install libicu-dev")
   } else {
-    expect_true("apt-get install -y libicu-dev" %in% res)
+    expect_match(res, "apt-get install -y libicu-dev")
   }
 })
 
