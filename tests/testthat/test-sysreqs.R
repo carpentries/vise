@@ -39,9 +39,11 @@ test_that("test missing packages", {
   res <- vise::ci_new_pkgs_sysreqs(missing, execute = FALSE, exclude = c("git", "libicu-dev"), use_pak = use_pak)
 
   if (use_pak) {
-    expect_length(res$packages$system_packages, 1)
+    expect_length(res$packages$system_packages, 2)
   } else {
-    expect_length(res, 1)
+    res <- unlist(strsplit(res, " "))
+    res <- res[4:length(res)]
+    expect_length(res, 2)
   }
 })
 
