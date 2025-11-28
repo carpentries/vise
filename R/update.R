@@ -10,12 +10,15 @@
 #' @param profile the profile of the renv project
 #' @param update a character vector of `'true'` (default) or `'false'`, which
 #'   indicates whether or not the existing packages should be updated.
-#' @param skip_restore do not attempt to restore the renv.lock packages before hydration
-#'   (this can be useful to update broken or very old packages, or when R updates and
-#'   existing package versions cannot be restored)
+#' @param force_renv_init a character vector of `'true'` or `'false'` (default), to
+#'   force the re-initialization of renv even if a lockfile exists.
+#'   This can be useful if you want to ensure that Bioconductor
+#'   packages are properly initialized. This can also be useful to update
+#'   broken or very old packages, or when R updates and existing package versions
+#'   cannot be restored.
 #' @param repos the repositories to use in the search.
 #' @export
-ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_restore = 'false', repos = NULL) {
+ci_update <- function(profile = 'lesson-requirements', update = 'true', force_renv_init = 'false', repos = NULL) {
 
   n <- 0
   the_report <- character(0)
@@ -31,19 +34,14 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
 
-  should_skip_restore <- as.logical(toupper(skip_restore))
-  if (should_skip_restore) {
-    cat("Skipping restore at user request\n")
+  should_force_renv_init <- as.logical(toupper(force_renv_init))
+  if (should_force_renv_init) {
+    cat("Forcing renv initialisation at user request\n")
 
     uses_bioc <- current_lock$Bioconductor
     if (!is.null(uses_bioc)) {
       renv::init(bioconductor = TRUE, profile = profile)
     }
-  }
-  else {
-    cat("::group::Restoring package library\n")
-    rest <- renv::restore(library = lib, lockfile = lock)
-    cat("::endgroup::\n")
   }
 
   # Detect any new packages that entered the lesson --------------------
@@ -63,9 +61,27 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     cat("Some packages failed installation... attempting to find system requirements\n")
     ci_new_pkgs_sysreqs(hydra$missing)
     hydra <- renv::hydrate(library = lib, update = TRUE)
+
+    if (length(hydra$missing)) {
+      pkgs_to_install <- vapply(hydra$missing, function(pkg) pkg$package, character(1))
+      for (pkg_name in pkgs_to_install) {
+        pkg_info <- current_lock$Packages[[pkg_name]]
+
+        if (!is.null(pkg_info$Source) && pkg_info$Source == "GitHub") {
+          cat("Trying GitHub for:", paste(pkg_name, collapse = ", "), "\n")
+          ref <- sprintf("%s/%s", pkg_info$RemoteUsername, pkg_info$RemoteRepo)
+          renv::install(ref, library = lib)
+        }
+      }
+    }
   }
+
+  cat("::group::Final package library restore\n")
+  rest <- renv::restore(library = lib, lockfile = lock)
+  cat("::endgroup::\n")
+
   # The first snapshot captures the packages that were added during hydrate and
-  # it will also capture the packages that were removed in the prose
+  # it will also capture the packages that were removed in the process
   snap_report <- utils::capture.output(new_lock <- renv::snapshot(library = lib, lockfile = lock, force = TRUE))
   snap_report <- snap_report[startsWith(trimws(snap_report), "-")]
 
@@ -87,6 +103,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     cat(n, "packages found", paste(sneaky_pkgs, collapse = ", "), "\n")
   }
   cat("::endgroup::\n")
+
   # Check for updates to packages --------------------------------------
   should_update <- as.logical(toupper(update))
   if (should_update) {
@@ -108,7 +125,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
       header <- seq(min(header) - 1L)
     }
     footer <- tryCatch(seq(which(startsWith(trimws(update_report), "- Lockfile")),
-      length(update_report)), error = function(e) length(update_report))
+    length(update_report)), error = function(e) length(update_report))
     update_report <- update_report[-c(header, footer)]
 
     # We can detect the number of updated packages via checking the number of
@@ -121,6 +138,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', skip_res
     cat("Updating", n_updates, "packages", "\n")
     cat("::endgroup::\n")
   }
+
   cat("::group::Cleaning the cache\n")
   renv::clean(actions = c('package.locks', 'library.tempdirs', 'unused.packages'))
   cat("::endgroup::\n")
