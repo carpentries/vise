@@ -57,7 +57,7 @@ new packages, and updates existing packages.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ci_update</span><span class="op">(</span></span>
 <span>  profile <span class="op">=</span> <span class="st">"lesson-requirements"</span>,</span>
 <span>  update <span class="op">=</span> <span class="st">"true"</span>,</span>
-<span>  skip_restore <span class="op">=</span> <span class="st">"false"</span>,</span>
+<span>  force_renv_init <span class="op">=</span> <span class="st">"false"</span>,</span>
 <span>  repos <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -75,10 +75,13 @@ new packages, and updates existing packages.</p>
 indicates whether or not the existing packages should be updated.</p></dd>
 
 
-<dt id="arg-skip-restore">skip_restore<a class="anchor" aria-label="anchor" href="#arg-skip-restore"></a></dt>
-<dd><p>do not attempt to restore the renv.lock packages before hydration
-(this can be useful to update broken or very old packages, or when R updates and
-existing package versions cannot be restored)</p></dd>
+<dt id="arg-force-renv-init">force_renv_init<a class="anchor" aria-label="anchor" href="#arg-force-renv-init"></a></dt>
+<dd><p>a character vector of <code>'true'</code> or <code>'false'</code> (default), to
+force the re-initialization of renv even if a lockfile exists.
+This can be useful if you want to ensure that Bioconductor
+packages are properly initialized. This can also be useful to update
+broken or very old packages, or when R updates and existing package versions
+cannot be restored.</p></dd>
 
 
 <dt id="arg-repos">repos<a class="anchor" aria-label="anchor" href="#arg-repos"></a></dt>

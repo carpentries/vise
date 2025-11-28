@@ -31,5 +31,6 @@ if (startsWith(tolower(R.version$os), "linux")) {
   vise::ci_new_pkgs_sysreqs(pkgs, execute = FALSE)
 }
 #> [1] "ubuntu" "24.04" 
+#> No system dependencies to install
 #> character(0)
 ```

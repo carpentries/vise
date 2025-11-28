@@ -15,7 +15,7 @@ packages.
 ci_update(
   profile = "lesson-requirements",
   update = "true",
-  skip_restore = "false",
+  force_renv_init = "false",
   repos = NULL
 )
 ```
@@ -31,11 +31,14 @@ ci_update(
   a character vector of `'true'` (default) or `'false'`, which indicates
   whether or not the existing packages should be updated.
 
-- skip_restore:
+- force_renv_init:
 
-  do not attempt to restore the renv.lock packages before hydration
-  (this can be useful to update broken or very old packages, or when R
-  updates and existing package versions cannot be restored)
+  a character vector of `'true'` or `'false'` (default), to force the
+  re-initialization of renv even if a lockfile exists. This can be
+  useful if you want to ensure that Bioconductor packages are properly
+  initialized. This can also be useful to update broken or very old
+  packages, or when R updates and existing package versions cannot be
+  restored.
 
 - repos:
 
