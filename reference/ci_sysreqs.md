@@ -59,6 +59,5 @@ if (startsWith(tolower(R.version$os), "linux")) {
   print(vise::ci_sysreqs(lock, execute = FALSE))
 }
 #> [1] "ubuntu" "24.04" 
-#> [1] "apt-get install -y make"       "apt-get install -y pandoc"    
-#> [3] "apt-get install -y libicu-dev"
+#> <environment: 0x5589f1c7e328>
 ```

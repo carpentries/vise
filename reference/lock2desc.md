@@ -31,5 +31,5 @@ the path to the new description file
 ``` r
 lock <- system.file("renv.lock", package = "vise")
 lock2desc(lock)
-#> [1] "/tmp/RtmpctyDux/file24ee711239d2/DESCRIPTION"
+#> [1] "/tmp/Rtmp9YJVdT/file24ed621085a1/DESCRIPTION"
 ```
