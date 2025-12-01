@@ -105,13 +105,13 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
 
     reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
 
-    pkg_reqs <- reqs[grepl("^apt-get.*install", reqs)]
-    ppa_reqs <- reqs[grepl("add-apt-repository|ppa:|r-cran-|r-bioc-", reqs)]
-
-    # on ubuntu, we can assume apt, so we can compress this to a single call
     if (ver[1] == "ubuntu") {
-      nz <- nzchar(reqs)
-      deps_list <- substring(reqs[nz], 20, nchar(reqs[nz]))
+      # get the apt installable packages
+      apt_reqs <- reqs[grepl("^apt-get.*install", reqs)]
+
+      # on ubuntu, we can assume apt, so we can compress this to a single call
+      nz <- nzchar(apt_reqs)
+      deps_list <- substring(apt_reqs[nz], 20, nchar(apt_reqs[nz]))
       to_install <- setdiff(deps_list, exclude)
 
       if (length(to_install) == 0) {
@@ -120,21 +120,31 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
       }
 
       deps <- paste(to_install, collapse = " ")
-      reqs <- paste("apt-get install -y", deps)
-    }
+      pkg_reqs <- paste("apt-get install -y", deps)
 
-    #nocov start
-    if (execute) {
-      su <- if (sudo) "sudo" else ""
-      if (ver[1] == "ubuntu") {
-        system(trimws(paste(su, "apt-get update")))
+      # get any ppa requirements
+      ppa_reqs <- reqs[grepl("add-apt-repository|ppa:", reqs)]
 
-        for (ppa_r in ppa_reqs) {
-          system(trimws(paste(su, ppa_r)))
-        }
+      # get any other requirements
+      other_reqs <- setdiff(reqs, c(apt_reqs, ppa_reqs))
 
-        for (pkg_r in reqs) {
-          system(trimws(paste(su, pkg_r)))
+      #nocov start
+      if (execute) {
+        su <- if (sudo) "sudo" else ""
+        if (ver[1] == "ubuntu") {
+          system(trimws(paste(su, "apt-get update")))
+
+          for (oth_r in other_reqs) {
+            system(trimws(paste(su, oth_r)))
+          }
+
+          for (ppa_r in ppa_reqs) {
+            system(trimws(paste(su, ppa_r)))
+          }
+
+          for (pkg_r in pkg_reqs) {
+            system(trimws(paste(su, pkg_r)))
+          }
         }
       }
     }
