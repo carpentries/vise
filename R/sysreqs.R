@@ -81,7 +81,7 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
         if (length(req_list) == 0) {
           reqs$install_scripts <- ""
         } else {
-          reqs$install_scripts <- paste("apt-get -y install", paste(req_list, collapse = " "))
+          reqs$install_scripts <- paste("apt-get install -y", paste(req_list, collapse = " "))
         }
       }
     }
@@ -91,49 +91,59 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
       return(reqs)
     }
 
+    # nocov start
     if (execute) {
       su <- if (sudo) "sudo" else ""
       system(trimws(paste(su, reqs$pre_install)))
       system(trimws(paste(su, reqs$install_scripts)))
     }
+    # nocov end
+    return(reqs)
   }
   else {
+    reqs <- new.env()
+    reqs$pre_install     <- c()
+    reqs$install_scripts <- c()
+
     # convert the lockfile to a temporary DESCRIPTION file
     if (!requireNamespace("remotes", quietly = TRUE)) {
       stop("The {remotes} package is required for this function.")
     }
 
-    reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
+    sys_reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
 
     if (ver[1] == "ubuntu") {
       # get the apt installable packages
-      apt_reqs <- reqs[grepl("^apt-get.*install", reqs)]
+      apt_reqs <- sys_reqs[grepl("^apt-get.*install", sys_reqs)]
 
-      # on ubuntu, we can assume apt, so we can compress this to a single call
+      # on ubuntu, we can assume apt
       nz <- nzchar(apt_reqs)
       deps_list <- substring(apt_reqs[nz], 20, nchar(apt_reqs[nz]))
       to_install <- setdiff(deps_list, exclude)
-
       if (length(to_install) == 0) {
         cat("No system dependencies to install\n")
-        return(to_install)
+        return(reqs)
       }
+      reqs$install_scripts <- paste("apt-get -y install", to_install)
 
+      # compress down to a single call for efficiency
       deps <- paste(to_install, collapse = " ")
-      pkg_reqs <- paste("apt-get install -y", deps)
+      pkg_reqs <- paste("apt-get -y install", deps)
 
       # get any ppa requirements
-      ppa_reqs <- reqs[grepl("add-apt-repository|ppa:", reqs)]
+      ppa_reqs <- sys_reqs[grepl("add-apt-repository|ppa:", sys_reqs)]
+      reqs$pre_install <- ppa_reqs
 
       # get any other requirements
-      other_reqs <- setdiff(reqs, c(apt_reqs, ppa_reqs))
+      other_reqs <- setdiff(sys_reqs, c(apt_reqs, ppa_reqs))
+      reqs$pre_install <- c(reqs$pre_install, other_reqs)
 
       #nocov start
       if (execute) {
         su <- if (sudo) "sudo" else ""
         if (ver[1] == "ubuntu") {
           system(trimws(paste(su, "apt-get update")))
-          system(trimws(paste(su, "apt-get install -y software-properties-common")))
+          system(trimws(paste(su, "apt-get -y install software-properties-common")))
 
           for (ppa_r in ppa_reqs) {
             system(trimws(paste(su, ppa_r)))
@@ -148,11 +158,11 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
           }
         }
       }
+      #nocov end
     }
-  }
 
-  #nocov end
-  return(reqs)
+    return(reqs)
+  }
 }
 
 #' convert a list of packages into a description file and detect system requirements

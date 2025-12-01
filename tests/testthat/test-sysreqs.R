@@ -15,11 +15,8 @@ test_that("ci_sysreqs will detect the requirements for a knitr lockfile", {
     if (length(res$packages$system_packages) == 0) {
       skip("libicu-dev already installed")
     }
-
-    expect_match(res$install_scripts, "apt-get -y install libicu-dev")
-  } else {
-    expect_match(res, "apt-get install -y libicu-dev")
   }
+  expect_match(res$install_scripts, "apt-get -y install libicu-dev")
 })
 
 test_that("test missing packages", {
@@ -41,9 +38,10 @@ test_that("test missing packages", {
   if (use_pak) {
     expect_length(res$packages$system_packages, 2)
   } else {
-    res <- unlist(strsplit(res, " "))
-    res <- res[4:length(res)]
-    expect_length(res, 2)
+    # res <- unlist(strsplit(res, " "))
+    # res <- res[4:length(res)]
+    # expect_length(res, 2)
+    expect_length(res$install_scripts, 2)
   }
 })
 
@@ -66,6 +64,6 @@ test_that("test exclude packages", {
   if (use_pak) {
     expect_length(res$packages$system_packages, 0)
   } else {
-    expect_length(res, 0)
+    expect_length(res$install_scripts, 0)
   }
 })
