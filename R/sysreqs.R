@@ -133,13 +133,14 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
         su <- if (sudo) "sudo" else ""
         if (ver[1] == "ubuntu") {
           system(trimws(paste(su, "apt-get update")))
-
-          for (oth_r in other_reqs) {
-            system(trimws(paste(su, oth_r)))
-          }
+          system(trimws(paste(su, "apt-get install -y software-properties-common")))
 
           for (ppa_r in ppa_reqs) {
             system(trimws(paste(su, ppa_r)))
+          }
+
+          for (oth_r in other_reqs) {
+            system(trimws(paste(su, oth_r)))
           }
 
           for (pkg_r in pkg_reqs) {
