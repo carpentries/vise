@@ -59,8 +59,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   # attempting the sysreqs installation and then re-trying the hydration
   if (!exists("hydra") || is.null(hydra)) {
     cat("No hydration output\n")
-  }
-  else (length(hydra$missing) && on_linux) {
+  } else (length(hydra$missing) && on_linux) {
     cat("Some packages failed installation... attempting to find system requirements\n")
     ci_new_pkgs_sysreqs(hydra$missing)
     hydra <- renv::hydrate(library = lib, update = TRUE)
