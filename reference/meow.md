@@ -44,9 +44,9 @@ vise$meow("single", "hello!")
 vise$meow("multi", c("This information", "exists on", "multiple lines"))
 writeLines(readLines(tmp))
 #> single=hello!
-#> multi<<EdLieexomb92Q9QeuR8H
+#> multi<<SwlKLUUEdLieexomb92Q
 #> This information
 #> exists on
 #> multiple lines
-#> EdLieexomb92Q9QeuR8H
+#> SwlKLUUEdLieexomb92Q
 ```
