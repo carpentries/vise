@@ -50,7 +50,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       hydra <- renv::hydrate(library = lib, update = TRUE)
     },
     error = function(e) {
-      cat("There was an error... trying again")
+      cat("There was an error... trying again\n")
       cat(e$message)
     }
   )
@@ -58,7 +58,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   # when enumerating the system requirements. This accounts for that by
   # attempting the sysreqs installation and then re-trying the hydration
   if (!exists("hydra") || is.null(hydra)) {
-    cat("No hydration output\n")
+    cat("No hydration output detected. There might be errors ahead ...\n")
   } else {
     if (length(hydra$missing) && on_linux) {
       cat("Some packages failed installation... attempting to find system requirements\n")
