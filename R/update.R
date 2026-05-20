@@ -50,27 +50,31 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       hydra <- renv::hydrate(library = lib, update = TRUE)
     },
     error = function(e) {
-      cat("There was an error... trying again")
+      cat("There was an error... trying again\n")
       cat(e$message)
     }
   )
   # if there are errors here, it might be because we did not account for them
   # when enumerating the system requirements. This accounts for that by
   # attempting the sysreqs installation and then re-trying the hydration
-  if (length(hydra$missing) && on_linux) {
-    cat("Some packages failed installation... attempting to find system requirements\n")
-    ci_new_pkgs_sysreqs(hydra$missing)
-    hydra <- renv::hydrate(library = lib, update = TRUE)
+  if (!exists("hydra") || is.null(hydra)) {
+    cat("No hydration output detected. There might be errors ahead ...\n")
+  } else {
+    if (length(hydra$missing) && on_linux) {
+      cat("Some packages failed installation... attempting to find system requirements\n")
+      ci_new_pkgs_sysreqs(hydra$missing)
+      hydra <- renv::hydrate(library = lib, update = TRUE)
 
-    if (length(hydra$missing)) {
-      pkgs_to_install <- vapply(hydra$missing, function(pkg) pkg$package, character(1))
-      for (pkg_name in pkgs_to_install) {
-        pkg_info <- current_lock$Packages[[pkg_name]]
+      if (exists("hydra") && !is.null(hydra) && length(hydra$missing)) {
+        pkgs_to_install <- vapply(hydra$missing, function(pkg) pkg$package, character(1))
+        for (pkg_name in pkgs_to_install) {
+          pkg_info <- current_lock$Packages[[pkg_name]]
 
-        if (!is.null(pkg_info$Source) && pkg_info$Source == "GitHub") {
-          cat("Trying GitHub for:", paste(pkg_name, collapse = ", "), "\n")
-          ref <- sprintf("%s/%s", pkg_info$RemoteUsername, pkg_info$RemoteRepo)
-          renv::install(ref, library = lib)
+          if (!is.null(pkg_info$Source) && pkg_info$Source == "GitHub") {
+            cat("Trying GitHub for:", paste(pkg_name, collapse = ", "), "\n")
+            ref <- sprintf("%s/%s", pkg_info$RemoteUsername, pkg_info$RemoteRepo)
+            renv::install(ref, library = lib)
+          }
         }
       }
     }
