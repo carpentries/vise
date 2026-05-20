@@ -16,7 +16,8 @@ test_that("ci_sysreqs will detect the requirements for a knitr lockfile", {
       skip("libicu-dev already installed")
     }
   }
-  expect_match(res$install_scripts, "apt-get -y install libicu-dev")
+  expect_length(res$install_scripts, 3)
+  expect_match(res$install_scripts[3], "apt-get -y install libicu-dev")
 })
 
 test_that("test missing packages", {
@@ -36,12 +37,9 @@ test_that("test missing packages", {
   res <- vise::ci_new_pkgs_sysreqs(missing, execute = FALSE, exclude = c("git", "libicu-dev"), use_pak = use_pak)
 
   if (use_pak) {
-    expect_length(res$packages$system_packages, 2)
+    expect_length(res$packages$system_packages, 4)
   } else {
-    # res <- unlist(strsplit(res, " "))
-    # res <- res[4:length(res)]
-    # expect_length(res, 2)
-    expect_length(res$install_scripts, 2)
+    expect_length(res$install_scripts, 4)
   }
 })
 
@@ -60,6 +58,14 @@ test_that("test exclude packages", {
     list(package = "rmarkdown")
   )
   res <- vise::ci_new_pkgs_sysreqs(missing, execute = FALSE, exclude = c("git", "make", "pandoc", "libicu-dev"), use_pak = use_pak)
+
+  if (use_pak) {
+    expect_length(res$packages$system_packages, 2)
+  } else {
+    expect_length(res$install_scripts, 2)
+  }
+
+  res <- vise::ci_new_pkgs_sysreqs(missing, execute = FALSE, exclude = c("git", "cmake","make", "pandoc", "libicu-dev", "libuv1-dev"), use_pak = use_pak)
 
   if (use_pak) {
     expect_length(res$packages$system_packages, 0)
