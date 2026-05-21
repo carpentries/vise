@@ -44,7 +44,11 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
     }
 
     cat("Forcing initial package update\n")
-    renv::update(library = lib)
+    updates <- renv::update(library = lib, check = TRUE)
+    updates_needed <- !identical(updates, TRUE)
+    if (updates_needed) {
+      renv::update(library = lib, lock = TRUE)
+    }
   }
 
   # Detect any new packages that entered the lesson --------------------
