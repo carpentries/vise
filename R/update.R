@@ -35,6 +35,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   renv::load()
 
   should_force_renv_init <- as.logical(toupper(force_renv_init))
+  should_update <- as.logical(toupper(update))
   if (should_force_renv_init) {
     cat("Forcing renv initialisation at user request\n")
 
@@ -43,36 +44,40 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       renv::init(bioconductor = TRUE, profile = profile)
     }
 
-    cat("Forcing initial package restore check\n")
-    restore_result <- tryCatch({
-      renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = TRUE)
-      "success"
-    }, error = function(e) {
-      cat("Restore failed:", conditionMessage(e), "\n")
-      cat("Attempting repair by updating packages to latest CRAN versions\n")
+    if (should_update) {
+      cat("Attempt initial package restore check\n")
+      restore_result <- tryCatch({
+        renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE)
+        "success"
+      }, error = function(e) {
+        cat("Restore failed:", conditionMessage(e), "\n")
+        cat("::group::Attempting repair by updating packages to latest CRAN versions\n")
 
-      # Force current CRAN (not lockfile snapshots)
-      options(repos = c(CRAN = "https://cloud.r-project.org"))
-      options(pkgType = "binary")  # Prefer binaries
+        # Use CRAN instead of lockfile RSPM snapshots, preferring binaries
+        options(repos = c(CRAN = "https://cloud.r-project.org"))
+        options(pkgType = "binary")
 
-      pkgs <- names(current_lock$Packages)
+        pkgs <- names(current_lock$Packages)
 
-      cat("Updating", length(pkgs), "packages from current CRAN\n")
-      install_result <- tryCatch({
-        renv::install(pkgs, prompt = FALSE, rebuild = FALSE, type = "binary")
-        TRUE
-      }, error = function(e2) {
-        cat("Binary install failed, trying with source allowed:\n")
-        cat(conditionMessage(e2), "\n")
-        renv::install(pkgs, prompt = FALSE, rebuild = TRUE)
-        TRUE
+        cat("Updating", length(pkgs), "packages from current CRAN\n")
+        install_result <- tryCatch({
+          renv::install(pkgs, prompt = FALSE, rebuild = FALSE, type = "binary")
+          TRUE
+        }, error = function(e2) {
+          cat("Binary install failed, trying with source allowed:\n")
+          cat(conditionMessage(e2), "\n")
+          renv::install(pkgs, prompt = FALSE, rebuild = TRUE)
+          TRUE
+        })
+        cat("::endgroup::\n")
+
+        cat("::group::Updating lockfile\n")
+        renv::snapshot(prompt = FALSE)
+        cat("::endgroup::\n")
+
+        "repaired"
       })
-
-      cat("Updating lockfile\n")
-      renv::snapshot(prompt = FALSE)
-
-      "repaired"
-    })
+    }
   }
 
   # Detect any new packages that entered the lesson --------------------
@@ -140,7 +145,6 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   cat("::endgroup::\n")
 
   # Check for updates to packages --------------------------------------
-  should_update <- as.logical(toupper(update))
   if (should_update) {
     cat("::group::Applying Updates\n")
     updates <- renv::update(library = lib, check = TRUE)
