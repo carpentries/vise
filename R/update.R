@@ -42,6 +42,9 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
     if (!is.null(uses_bioc)) {
       renv::init(bioconductor = TRUE, profile = profile)
     }
+
+    cat("Forcing initial package update\n")
+    renv::update(library = lib)
   }
 
   # Detect any new packages that entered the lesson --------------------
