@@ -48,10 +48,29 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = TRUE)
       "success"
     }, error = function(e) {
-      cat("Restore failed, attempting repair\n")
-      pkgs <- names(lock$Packages)
-      renv::install(pkgs, prompt = FALSE, rebuild = TRUE)
+      cat("Restore failed:", conditionMessage(e), "\n")
+      cat("Attempting repair by updating packages to latest CRAN versions\n")
+
+      # Force current CRAN (not lockfile snapshots)
+      options(repos = c(CRAN = "https://cloud.r-project.org"))
+      options(pkgType = "binary")  # Prefer binaries
+
+      pkgs <- names(current_lock$Packages)
+
+      cat("Updating", length(pkgs), "packages from current CRAN\n")
+      install_result <- tryCatch({
+        renv::install(pkgs, prompt = FALSE, rebuild = FALSE, type = "binary")
+        TRUE
+      }, error = function(e2) {
+        cat("Binary install failed, trying with source allowed:\n")
+        cat(conditionMessage(e2), "\n")
+        renv::install(pkgs, prompt = FALSE, rebuild = TRUE)
+        TRUE
+      })
+
+      cat("Updating lockfile\n")
       renv::snapshot(prompt = FALSE)
+
       "repaired"
     })
   }
