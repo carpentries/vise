@@ -43,6 +43,8 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       renv::init(bioconductor = TRUE, profile = profile)
     }
 
+    rest <- renv::restore(library = lib, lockfile = lock)
+
     cat("Forcing initial package update\n")
     updates <- renv::update(library = lib, check = TRUE)
     updates_needed <- !identical(updates, TRUE)
