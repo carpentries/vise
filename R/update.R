@@ -43,14 +43,17 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       renv::init(bioconductor = TRUE, profile = profile)
     }
 
-    rest <- renv::restore(library = lib, lockfile = lock)
-
-    cat("Forcing initial package update\n")
-    updates <- renv::update(library = lib, check = TRUE)
-    updates_needed <- !identical(updates, TRUE)
-    if (updates_needed) {
-      renv::update(library = lib, lock = TRUE)
-    }
+    cat("Forcing initial package restore check\n")
+    restore_result <- tryCatch({
+      renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = TRUE)
+      "success"
+    }, error = function(e) {
+      cat("Restore failed, attempting repair\n")
+      pkgs <- names(lock$Packages)
+      renv::install(pkgs, prompt = FALSE, rebuild = TRUE)
+      renv::snapshot(prompt = FALSE)
+      "repaired"
+    })
   }
 
   # Detect any new packages that entered the lesson --------------------
