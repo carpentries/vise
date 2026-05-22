@@ -10,7 +10,7 @@ ci_parse_snapshot_report <- function(snapshot_report) {
 }
 
 ci_package_update_check <- function(lib = lib) {
-  report_env = env()
+  report_env = new.env()
 
   cat("::group::CI Package Update Check\n")
   updates <- renv::update(library = lib, check = TRUE)
