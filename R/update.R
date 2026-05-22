@@ -100,11 +100,12 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
         restore_env
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
-        failed_restore_output <- grep("^- \\[.+\\]: install failed", restore_output, value = TRUE)
+        restore_output <- strsplit(restore_output, "\n")[[1]]
+        failed_restore_output <- grep("^[[:space:]]+- \\[.+\\]: install failed", restore_output, value = TRUE)
         n_failed_restore <- length(failed_restore_output)
 
         failed_report <- "The following packages failed to restore:\n\n"
-        failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"))
+        failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"), "\n\n")
 
         cat("::group::Attempting repair by updating", n_failed_restore, "packages to latest CRAN versions\n")
 
