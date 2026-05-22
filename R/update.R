@@ -104,6 +104,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
         pkgs <- names(current_lock$Packages)
 
+        install_result <- character(0)
         cat("Updating", length(pkgs), "packages from current CRAN\n")
         tryCatch({
           install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary")
@@ -112,11 +113,11 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           cat(conditionMessage(e2), "\n")
           install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
         })
-        if (!is.null(install_result)) {
-          n <- n + length(install_result)
-        }
+        n <- n + length(install_result)
+
         cat("::endgroup::\n")
 
+        cat("Installed", length(install_result), "packages from current CRAN\n")
         cat("::group::Updating lockfile\n")
         snapshot_report <- ci_parse_snapshot_report(
           utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
