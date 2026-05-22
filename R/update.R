@@ -91,12 +91,19 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
     if (should_update) {
       cat("Attempt initial package restore check\n")
-      num_updated <- tryCatch({
-        renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE)
-        0
+      restore_output <- character(0)
+      updated <- tryCatch({
+        restore_output <<- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
+        new.env(n = 0, report = restore_output)
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
-        cat("::group::Attempting repair by updating packages to latest CRAN versions\n")
+        failed_restore_output <- grepl("^- \\[.+\\]: install failed", restore_output, value = TRUE)
+        n_failed_restore <- length(failed_restore_output)
+
+        failed_report <- "The following packages failed to restore:\n\n"
+        failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"))
+
+        cat("::group::Attempting repair by updating", n_failed_restore, "packages to latest CRAN versions\n")
 
         # Use CRAN instead of lockfile RSPM snapshots, preferring binaries
         options(repos = c(CRAN = "https://cloud.r-project.org", RSPM = Sys.getenv("RSPM")))
@@ -106,15 +113,14 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
         install_result <- character(0)
         cat("Updating", length(pkgs), "packages from current CRAN\n")
-        tryCatch({
-          install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary")
+        install_result <- tryCatch({
+          utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"), type = "message")
         }, error = function(e2) {
           cat("Binary install failed, trying with source allowed:\n")
           cat(conditionMessage(e2), "\n")
-          install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
+          utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE), type = "message")
         })
-        n <- n + length(install_result)
-
+        n <- n + sum(startsWith(trimws(install_result), "-"))
         cat("::endgroup::\n")
 
         cat("::group::Updating lockfile\n")
@@ -122,14 +128,12 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
         )
         cat("::endgroup::\n")
-        # n <- n + sum(startsWith(trimws(snapshot_report), "-"))
-
-        # cat("Installed", n, "packages from current CRAN\n")
-        n
+        new.env(n = n, report = c(failed_report, install_result, snapshot_report))
       })
     }
-    n <- n + num_updated
-    cat("Current count:", n, "\n")
+
+    n <- n + updated$n
+    the_report <- c(the_report, updated$report)
   }
 
   # Detect any new packages that entered the lesson --------------------
