@@ -27,7 +27,7 @@ ci_package_update_check <- function(lib = lib) {
     # it up by removing the header (that starts before the `# CRAN` signifier)
     # and the footer that starts with ` - Lockfile written to`
     snapshot_report <- ci_parse_snapshot_report(
-      utils::capture.output(renv::snapshot(lockfile = lock, prompt = FALSE))
+      utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
     )
 
     # We can detect the number of updated packages via checking the number of
@@ -106,19 +106,19 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
         cat("Updating", length(pkgs), "packages from current CRAN\n")
         install_result <- tryCatch({
-          renv::install(pkgs, prompt = FALSE, rebuild = FALSE, type = "binary")
+          renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary")
           TRUE
         }, error = function(e2) {
           cat("Binary install failed, trying with source allowed:\n")
           cat(conditionMessage(e2), "\n")
-          renv::install(pkgs, prompt = FALSE, rebuild = TRUE)
+          install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
           TRUE
         })
         cat("::endgroup::\n")
 
         cat("::group::Updating lockfile\n")
         snapshot_report <- ci_parse_snapshot_report(
-          utils::capture.output(renv::snapshot(lockfile = lock, prompt = FALSE))
+          utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
         )
         cat("::endgroup::\n")
         n <- n + sum(startsWith(trimws(snapshot_report), "-"))
