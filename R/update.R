@@ -91,9 +91,8 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
     if (should_update) {
       cat("Attempt initial package restore check\n")
-      restore_result <- tryCatch({
+      tryCatch({
         renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE)
-        "success"
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
         cat("::group::Attempting repair by updating packages to latest CRAN versions\n")
@@ -113,11 +112,10 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           cat(conditionMessage(e2), "\n")
           install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
         })
-        n <- n + length(install_result)
+        # n <- n + length(install_result)
 
         cat("::endgroup::\n")
 
-        cat("Installed", length(install_result), "packages from current CRAN\n")
         cat("::group::Updating lockfile\n")
         snapshot_report <- ci_parse_snapshot_report(
           utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
@@ -125,9 +123,11 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
         cat("::endgroup::\n")
         n <- n + sum(startsWith(trimws(snapshot_report), "-"))
 
-        "repaired"
+        cat("Installed", n, "packages from current CRAN\n")
       })
     }
+
+    cat("Current count:", n, "\n")
   }
 
   # Detect any new packages that entered the lesson --------------------
