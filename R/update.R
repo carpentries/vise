@@ -1,3 +1,49 @@
+ci_parse_snapshot_report <- function(snapshot_report) {
+  header <- which(startsWith(trimws(snapshot_report), "#"))
+  if (length(header)) {
+    header <- seq(min(header) - 1L)
+  }
+  footer <- tryCatch(seq(which(startsWith(trimws(snapshot_report), "- Lockfile")),
+  length(snapshot_report)), error = function(e) length(snapshot_report))
+  snapshot_report <- snapshot_report[-c(header, footer)]
+  invisible(snapshot_report)
+}
+
+ci_package_update_check <- function(lib = lib) {
+  report_env = env()
+
+  cat("::group::CI Package Update Check\n")
+  updates <- renv::update(library = lib, check = TRUE)
+  updates_needed <- !identical(updates, TRUE)
+
+  n <- 0
+  the_report <- character(0)
+
+  if (updates_needed) {
+    # apply the updates and run a snapshot if the dry run found updates
+    renv::update(library = lib)
+
+    # The update report has some noise from the snapshot, so we need to clean
+    # it up by removing the header (that starts before the `# CRAN` signifier)
+    # and the footer that starts with ` - Lockfile written to`
+    snapshot_report <- ci_parse_snapshot_report(
+      utils::capture.output(renv::snapshot(lockfile = lock, prompt = FALSE))
+    )
+
+    # We can detect the number of updated packages via checking the number of
+    # ticks the output has. This is crude, but the updates from
+    # renv::update(check = TRUE) no longer gives us an accurate count because
+    # it also counts packages that were accidentally inserted.
+    n_updates <- sum(startsWith(trimws(snapshot_report), "-"))
+    report_env$n <- n + n_updates
+    report_env$report <- c(the_report, snapshot_report)
+    cat("Updating", n_updates, "packages", "\n")
+    cat("::endgroup::\n")
+  }
+
+  return(report_env)
+}
+
 #' Update Packages in a {renv} lockfile in GitHub Actions
 #'
 #' With actively developed projects, it can be beneficial to auto-update
@@ -19,10 +65,6 @@
 #' @param repos the repositories to use in the search.
 #' @export
 ci_update <- function(profile = 'lesson-requirements', update = 'true', force_renv_init = 'false', repos = NULL) {
-
-  n <- 0
-  the_report <- character(0)
-
   Sys.setenv("RENV_PROFILE" = profile)
   lib  <- renv::paths$library()
   lock <- renv::paths$lockfile()
@@ -33,6 +75,9 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   if (on_linux)
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
+
+  n <- 0
+  the_report <- character(0)
 
   should_force_renv_init <- as.logical(toupper(force_renv_init))
   should_update <- as.logical(toupper(update))
@@ -72,8 +117,11 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
         cat("::endgroup::\n")
 
         cat("::group::Updating lockfile\n")
-        renv::snapshot(prompt = FALSE)
+        snapshot_report <- ci_parse_snapshot_report(
+          utils::capture.output(renv::snapshot(lockfile = lock, prompt = FALSE))
+        )
         cat("::endgroup::\n")
+        n <- n + sum(startsWith(trimws(snapshot_report), "-"))
 
         "repaired"
       })
@@ -146,36 +194,9 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
   # Check for updates to packages --------------------------------------
   if (should_update) {
-    cat("::group::Applying Updates\n")
-    updates <- renv::update(library = lib, check = TRUE)
-    updates_needed <- !identical(updates, TRUE)
-  } else {
-    updates_needed <- FALSE
-  }
-  if (updates_needed) {
-    # apply the updates and run a snapshot if the dry run found updates
-    renv::update(library = lib)
-    # The update report has some noise from the snapshot, so we need to clean
-    # it up by removing the header (that starts before the `# CRAN` signifier)
-    # and the footer that starts with ` - Lockfile written to`
-    update_report <- utils::capture.output(renv::snapshot(lockfile = lock))
-    header <- which(startsWith(trimws(update_report), "#"))
-    if (length(header)) {
-      header <- seq(min(header) - 1L)
-    }
-    footer <- tryCatch(seq(which(startsWith(trimws(update_report), "- Lockfile")),
-    length(update_report)), error = function(e) length(update_report))
-    update_report <- update_report[-c(header, footer)]
-
-    # We can detect the number of updated packages via checking the number of
-    # ticks the output has. This is crude, but the updates from
-    # renv::update(check = TRUE) no longer gives us an accurate count because
-    # it also counts packages that were accidentally inserted.
-    n_updates <- sum(startsWith(trimws(update_report), "-"))
-    n <- n + n_updates
-    the_report <- c(the_report, update_report)
-    cat("Updating", n_updates, "packages", "\n")
-    cat("::endgroup::\n")
+    update_report <- ci_package_update_check(lib = lib)
+    the_report <- c(the_report, update_report$report)
+    n <- update_report$n + n
   }
 
   cat("::group::Cleaning the cache\n")
