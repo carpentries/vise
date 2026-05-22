@@ -100,7 +100,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
         restore_env
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
-        failed_restore_output <- grepl("^- \\[.+\\]: install failed", restore_output, value = TRUE)
+        failed_restore_output <- grep("^- \\[.+\\]: install failed", restore_output, value = TRUE)
         n_failed_restore <- length(failed_restore_output)
 
         failed_report <- "The following packages failed to restore:\n\n"
