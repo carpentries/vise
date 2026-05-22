@@ -16,8 +16,8 @@ ci_package_update_check <- function(lib = lib) {
   updates <- renv::update(library = lib, check = TRUE)
   updates_needed <- !identical(updates, TRUE)
 
-  n <- 0
-  the_report <- character(0)
+  report_env$n <- 0
+  report_env$report <- character(0)
 
   if (updates_needed) {
     # apply the updates and run a snapshot if the dry run found updates
@@ -35,13 +35,13 @@ ci_package_update_check <- function(lib = lib) {
     # renv::update(check = TRUE) no longer gives us an accurate count because
     # it also counts packages that were accidentally inserted.
     n_updates <- sum(startsWith(trimws(snapshot_report), "-"))
-    report_env$n <- n + n_updates
-    report_env$report <- c(the_report, snapshot_report)
+    report_env$n <- report_env$n + n_updates
+    report_env$report <- c(report_env$report, snapshot_report)
     cat("Updating", n_updates, "packages", "\n")
     cat("::endgroup::\n")
   }
 
-  return(report_env)
+  invisible(report_env)
 }
 
 #' Update Packages in a {renv} lockfile in GitHub Actions
