@@ -105,14 +105,12 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
         pkgs <- names(current_lock$Packages)
 
         cat("Updating", length(pkgs), "packages from current CRAN\n")
-        install_result <- tryCatch({
-          renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary")
-          TRUE
+        tryCatch({
+          install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary")
         }, error = function(e2) {
           cat("Binary install failed, trying with source allowed:\n")
           cat(conditionMessage(e2), "\n")
           install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
-          TRUE
         })
         if (!is.null(install_result)) {
           n <- n + length(install_result)
@@ -199,7 +197,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   if (should_update) {
     update_report <- ci_package_update_check(lib = lib)
     the_report <- c(the_report, update_report$report)
-    n <- update_report$n + n
+    n <- n + update_report$n
   }
 
   cat("::group::Cleaning the cache\n")
