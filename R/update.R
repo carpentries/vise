@@ -94,7 +94,10 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       restore_output <- character(0)
       updated <- tryCatch({
         restore_output <<- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
-        new.env(n = 0, report = restore_output)
+        restore_env <- new.env()
+        restore_env$n = 0
+        restore_env$report = restore_output
+        restore_env
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
         failed_restore_output <- grepl("^- \\[.+\\]: install failed", restore_output, value = TRUE)
@@ -128,7 +131,10 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
         )
         cat("::endgroup::\n")
-        new.env(n = n, report = c(failed_report, install_result, snapshot_report))
+        restore_env <- new.env()
+        restore_env$n = n
+        restore_env$report = c(failed_report, install_result, snapshot_report)
+        restore_env
       })
     }
 
