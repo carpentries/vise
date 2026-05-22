@@ -91,14 +91,15 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
     if (should_update) {
       cat("Attempt initial package restore check\n")
-      tryCatch({
+      num_updated <- tryCatch({
         renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE)
+        0
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
         cat("::group::Attempting repair by updating packages to latest CRAN versions\n")
 
         # Use CRAN instead of lockfile RSPM snapshots, preferring binaries
-        options(repos = c(CRAN = "https://cloud.r-project.org"))
+        options(repos = c(CRAN = "https://cloud.r-project.org", RSPM = Sys.getenv("RSPM")))
         options(pkgType = "binary")
 
         pkgs <- names(current_lock$Packages)
@@ -112,7 +113,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           cat(conditionMessage(e2), "\n")
           install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
         })
-        # n <- n + length(install_result)
+        n <- n + length(install_result)
 
         cat("::endgroup::\n")
 
@@ -121,12 +122,13 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
         )
         cat("::endgroup::\n")
-        n <- n + sum(startsWith(trimws(snapshot_report), "-"))
+        # n <- n + sum(startsWith(trimws(snapshot_report), "-"))
 
-        cat("Installed", n, "packages from current CRAN\n")
+        # cat("Installed", n, "packages from current CRAN\n")
+        n
       })
     }
-
+    n <- n + num_updated
     cat("Current count:", n, "\n")
   }
 
