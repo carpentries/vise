@@ -114,6 +114,9 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           install_result <- renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE)
           TRUE
         })
+        if (!is.null(install_result)) {
+          n <- n + length(install_result)
+        }
         cat("::endgroup::\n")
 
         cat("::group::Updating lockfile\n")
