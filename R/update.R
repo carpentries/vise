@@ -1,4 +1,4 @@
-ci_parse_snapshot_report <- function(snapshot_report) {
+ci_parse_snapshot_report_packages <- function(snapshot_report) {
   header <- which(startsWith(trimws(snapshot_report), "#"))
   if (length(header)) {
     header <- seq(min(header) - 1L)
@@ -7,6 +7,17 @@ ci_parse_snapshot_report <- function(snapshot_report) {
   length(snapshot_report)), error = function(e) length(snapshot_report))
   snapshot_report_clean <- snapshot_report[-c(header, footer)]
   return(snapshot_report_clean)
+}
+
+ci_parse_install_report_packages <- function(install_report) {
+  header <- which(startsWith(trimws(install_report), "The following package(s) will be installed:"))
+  if (length(header)) {
+    header <- seq(min(header) - 1L)
+  }
+  footer <- tryCatch(seq(which(startsWith(trimws(install_report), "These packages will be installed into")),
+  length(install_report)), error = function(e) length(install_report))
+  install_report_clean <- install_report[-c(header, footer)]
+  return(install_report_clean)
 }
 
 ci_package_update_check <- function(lib = lib) {
@@ -26,8 +37,9 @@ ci_package_update_check <- function(lib = lib) {
     # The update report has some noise from the snapshot, so we need to clean
     # it up by removing the header (that starts before the `# CRAN` signifier)
     # and the footer that starts with ` - Lockfile written to`
-    snapshot_report <- ci_parse_snapshot_report(
-      utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
+    snapshot_report <- ci_parse_snapshot_report_packages(
+      utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE)),
+      snapshot = TRUE
     )
 
     # We can detect the number of updated packages via checking the number of
@@ -108,7 +120,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           failed_restore_output <- gsub("\"", "", trimws(failmsg[[1]]))
           n_failed_restore <- length(failed_restore_output)
 
-          failed_report <- "The following packages failed to restore:\n\n"
+          failed_report <- paste0("The following ", n_failed_restore, " packages failed to restore:\n\n")
           failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"), "\n\n", "Attempting to update these packages to the latest CRAN versions.\n\n")
 
           cat("::group::Attempting repair by updating", n_failed_restore, "packages to latest CRAN versions\n")
@@ -121,20 +133,26 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
           cat("Updating", length(pkgs), "packages from current CRAN\n")
           install_result <- tryCatch({
-            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"))
+            ci_parse_install_report_packages(
+              utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"))
+            )
           }, error = function(e2) {
             cat("Binary install failed, trying with source allowed:\n")
             cat(conditionMessage(e2), "\n")
-            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE))
+            ci_parse_install_report_packages(
+              utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE))
+            )
           })
           n_installed <- sum(startsWith(trimws(install_result), "-"))
           cat("::endgroup::\n")
 
           cat("::group::Updating lockfile\n")
-          snapshot_report <- ci_parse_snapshot_report(
-            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE), type = "message")
+          snapshot_report <- ci_parse_snapshot_report_packages(
+            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
           )
           cat("::endgroup::\n")
+
+          failed_report <- paste0(failed_report, paste0("Repaired ", restore_env$n, " packages successfully.\n"))
 
           restore_env$n <- n_installed
           restore_env$report <- c(failed_report, install_result, snapshot_report)
