@@ -119,14 +119,13 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
           pkgs <- names(current_lock$Packages)
 
-          install_result <- character(0)
           cat("Updating", length(pkgs), "packages from current CRAN\n")
           install_result <- tryCatch({
-            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"), type = "message")
+            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"))
           }, error = function(e2) {
             cat("Binary install failed, trying with source allowed:\n")
             cat(conditionMessage(e2), "\n")
-            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE), type = "message")
+            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE))
           })
           n_installed <- sum(startsWith(trimws(install_result), "-"))
           cat("::endgroup::\n")
