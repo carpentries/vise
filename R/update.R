@@ -94,48 +94,46 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       restore_output <- character(0)
       updated <- tryCatch({
         restore_output <<- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
-        restore_env <- new.env()
-        restore_env$n = 0
-        restore_env$report = restore_output
+        restore_env <- new.env(n = 0, report = restore_output)
         restore_env
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
-        restore_output <- strsplit(restore_output, "\n")[[1]]
-        failed_restore_output <- grep("^[[:space:]]+- \\[.+\\]: install failed", restore_output, value = TRUE)
-        n_failed_restore <- length(failed_restore_output)
+        failmsg <-strsplit(sub("failed to install ", "", conditionMessage(e)), ",")
+        if (length(failmsg) >= 0) {
+          failed_restore_output <- gsub("\"", "", trimws(failmsg[[1]]))
+          n_failed_restore <- length(failed_restore_output)
 
-        failed_report <- "The following packages failed to restore:\n\n"
-        failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"), "\n\n")
+          failed_report <- "The following packages failed to restore:\n\n"
+          failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"), "\n\n", "Attempting to update these packages to the latest CRAN versions.\n\n")
 
-        cat("::group::Attempting repair by updating", n_failed_restore, "packages to latest CRAN versions\n")
+          cat("::group::Attempting repair by updating", n_failed_restore, "packages to latest CRAN versions\n")
 
-        # Use CRAN instead of lockfile RSPM snapshots, preferring binaries
-        options(repos = c(CRAN = "https://cloud.r-project.org", RSPM = Sys.getenv("RSPM")))
-        options(pkgType = "binary")
+          # Use CRAN instead of lockfile RSPM snapshots, preferring binaries
+          options(repos = c(CRAN = "https://cloud.r-project.org", RSPM = Sys.getenv("RSPM")))
+          options(pkgType = "binary")
 
-        pkgs <- names(current_lock$Packages)
+          pkgs <- names(current_lock$Packages)
 
-        install_result <- character(0)
-        cat("Updating", length(pkgs), "packages from current CRAN\n")
-        install_result <- tryCatch({
-          utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"), type = "message")
-        }, error = function(e2) {
-          cat("Binary install failed, trying with source allowed:\n")
-          cat(conditionMessage(e2), "\n")
-          utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE), type = "message")
-        })
-        n <- n + sum(startsWith(trimws(install_result), "-"))
-        cat("::endgroup::\n")
+          install_result <- character(0)
+          cat("Updating", length(pkgs), "packages from current CRAN\n")
+          install_result <- tryCatch({
+            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"), type = "message")
+          }, error = function(e2) {
+            cat("Binary install failed, trying with source allowed:\n")
+            cat(conditionMessage(e2), "\n")
+            utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE), type = "message")
+          })
+          n <- n + sum(startsWith(trimws(install_result), "-"))
+          cat("::endgroup::\n")
 
-        cat("::group::Updating lockfile\n")
-        snapshot_report <- ci_parse_snapshot_report(
-          utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
-        )
-        cat("::endgroup::\n")
-        restore_env <- new.env()
-        restore_env$n = n
-        restore_env$report = c(failed_report, install_result, snapshot_report)
-        restore_env
+          cat("::group::Updating lockfile\n")
+          snapshot_report <- ci_parse_snapshot_report(
+            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
+          )
+          cat("::endgroup::\n")
+          restore_env <- new.env(n = 0, report = c(failed_report, install_result, snapshot_report))
+          restore_env
+        }
       })
     }
 
