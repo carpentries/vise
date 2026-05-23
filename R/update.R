@@ -91,9 +91,8 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
     if (should_update) {
       cat("Attempt initial package restore check\n")
-      restore_output <- character(0)
       updated <- tryCatch({
-        restore_output <<- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
+        restore_output <- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
         restore_env <- new.env()
         restore_env$n = 0
         restore_env$report = restore_output
@@ -101,7 +100,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
         failmsg <-strsplit(sub("failed to install ", "", conditionMessage(e)), ",")
-        if (length(failmsg) >= 0) {
+        if (length(failmsg) > 0) {
           failed_restore_output <- gsub("\"", "", trimws(failmsg[[1]]))
           n_failed_restore <- length(failed_restore_output)
 
@@ -125,7 +124,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
             cat(conditionMessage(e2), "\n")
             utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE), type = "message")
           })
-          n <- n + sum(startsWith(trimws(install_result), "-"))
+          n <- sum(startsWith(trimws(install_result), "-"))
           cat("::endgroup::\n")
 
           cat("::group::Updating lockfile\n")
@@ -139,10 +138,9 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           restore_env
         }
       })
+      n <- n + updated$n
+      the_report <- c(the_report, updated$report)
     }
-
-    n <- n + updated$n
-    the_report <- c(the_report, updated$report)
   }
 
   # Detect any new packages that entered the lesson --------------------
