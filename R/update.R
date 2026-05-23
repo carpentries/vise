@@ -99,7 +99,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
         restore_env
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
-        failmsg <-strsplit(sub("failed to install ", "", conditionMessage(e)), ",")
+        failmsg <- strsplit(sub("failed to install ", "", conditionMessage(e)), ",")
         restore_env <- new.env()
         restore_env$n = 0
         restore_env$report = failmsg
@@ -128,7 +128,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
             cat(conditionMessage(e2), "\n")
             utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE), type = "message")
           })
-          n <- sum(startsWith(trimws(install_result), "-"))
+          n_installed <- sum(startsWith(trimws(install_result), "-"))
           cat("::endgroup::\n")
 
           cat("::group::Updating lockfile\n")
@@ -137,7 +137,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           )
           cat("::endgroup::\n")
 
-          restore_env$n = n
+          restore_env$n = n_installed
           restore_env$report = c(failed_report, install_result, snapshot_report)
         }
         restore_env
