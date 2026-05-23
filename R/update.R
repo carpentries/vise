@@ -94,15 +94,15 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
       updated <- tryCatch({
         restore_output <- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
         restore_env <- new.env()
-        restore_env$n = 0
-        restore_env$report = restore_output
+        restore_env$n <- 0
+        restore_env$report <- restore_output
         restore_env
       }, error = function(e) {
         cat("Restore failed:", conditionMessage(e), "\n")
         failmsg <- strsplit(sub("failed to install ", "", conditionMessage(e)), ",")
         restore_env <- new.env()
-        restore_env$n = 0
-        restore_env$report = failmsg
+        restore_env$n <- 0
+        restore_env$report <- failmsg
 
         if (length(failmsg) > 0) {
           failed_restore_output <- gsub("\"", "", trimws(failmsg[[1]]))
@@ -132,11 +132,13 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           cat("::endgroup::\n")
 
           cat("::group::Updating lockfile\n")
-          snapshot_report <- utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE), type = "message")
+          snapshot_report <- ci_parse_snapshot_report(
+            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE), type = "message")
+          )
           cat("::endgroup::\n")
 
-          restore_env$n = n_installed
-          restore_env$report = c(failed_report, install_result, snapshot_report)
+          restore_env$n <- n_installed
+          restore_env$report <- c(failed_report, install_result, snapshot_report)
 
           cat("Repaired", restore_env$n, "packages\n")
         }
