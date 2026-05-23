@@ -5,8 +5,8 @@ ci_parse_snapshot_report <- function(snapshot_report) {
   }
   footer <- tryCatch(seq(which(startsWith(trimws(snapshot_report), "- Lockfile")),
   length(snapshot_report)), error = function(e) length(snapshot_report))
-  snapshot_report <- snapshot_report[-c(header, footer)]
-  invisible(snapshot_report)
+  snapshot_report_clean <- snapshot_report[-c(header, footer)]
+  return(snapshot_report_clean)
 }
 
 ci_package_update_check <- function(lib = lib) {
@@ -132,19 +132,18 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           cat("::endgroup::\n")
 
           cat("::group::Updating lockfile\n")
-          snapshot_report <- ci_parse_snapshot_report(
-            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
-          )
+          snapshot_report <- utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE), type = "message")
           cat("::endgroup::\n")
 
           restore_env$n = n_installed
           restore_env$report = c(failed_report, install_result, snapshot_report)
+
+          cat("Repaired", restore_env$n, "packages\n")
         }
         restore_env
       })
       n <- n + updated$n
       the_report <- c(the_report, updated$report)
-      cat("Repaired", n, "packages\n")
     }
   }
 
