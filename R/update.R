@@ -1,3 +1,60 @@
+ci_parse_snapshot_report_packages <- function(snapshot_report) {
+  header <- which(startsWith(trimws(snapshot_report), "#"))
+  if (length(header)) {
+    header <- seq(min(header) - 1L)
+  }
+  footer <- tryCatch(seq(which(startsWith(trimws(snapshot_report), "- Lockfile")),
+  length(snapshot_report)), error = function(e) length(snapshot_report))
+  snapshot_report_clean <- snapshot_report[-c(header, footer)]
+  return(snapshot_report_clean)
+}
+
+ci_parse_install_report_packages <- function(install_report) {
+  header <- which(startsWith(trimws(install_report), "The following package(s) will be installed:"))
+  if (length(header)) {
+    header <- seq(min(header) - 1L)
+  }
+  footer <- tryCatch(seq(which(startsWith(trimws(install_report), "These packages will be installed into")),
+  length(install_report)), error = function(e) length(install_report))
+  install_report_clean <- install_report[-c(header, footer)]
+  return(install_report_clean)
+}
+
+ci_package_update_check <- function(lib, lockfile) {
+  report_env = new.env()
+
+  cat("::group::CI Package Update Check\n")
+  updates <- renv::update(library = lib, check = TRUE)
+  updates_needed <- !identical(updates, TRUE)
+
+  report_env$n <- 0
+  report_env$report <- character(0)
+
+  if (updates_needed) {
+    # apply the updates and run a snapshot if the dry run found updates
+    renv::update(library = lib)
+
+    # The update report has some noise from the snapshot, so we need to clean
+    # it up by removing the header (that starts before the `# CRAN` signifier)
+    # and the footer that starts with ` - Lockfile written to`
+    snapshot_report <- ci_parse_snapshot_report_packages(
+      utils::capture.output(renv::snapshot(lockfile = lockfile, library = lib, prompt = FALSE))
+    )
+
+    # We can detect the number of updated packages via checking the number of
+    # ticks the output has. This is crude, but the updates from
+    # renv::update(check = TRUE) no longer gives us an accurate count because
+    # it also counts packages that were accidentally inserted.
+    n_updates <- sum(startsWith(trimws(snapshot_report), "-"))
+    report_env$n <- report_env$n + n_updates
+    report_env$report <- c(report_env$report, snapshot_report)
+    cat("Updating", n_updates, "packages", "\n")
+    cat("::endgroup::\n")
+  }
+
+  invisible(report_env)
+}
+
 #' Update Packages in a {renv} lockfile in GitHub Actions
 #'
 #' With actively developed projects, it can be beneficial to auto-update
@@ -19,10 +76,6 @@
 #' @param repos the repositories to use in the search.
 #' @export
 ci_update <- function(profile = 'lesson-requirements', update = 'true', force_renv_init = 'false', repos = NULL) {
-
-  n <- 0
-  the_report <- character(0)
-
   Sys.setenv("RENV_PROFILE" = profile)
   lib  <- renv::paths$library()
   lock <- renv::paths$lockfile()
@@ -34,13 +87,81 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
 
+  n <- 0
+  the_report <- character(0)
+
   should_force_renv_init <- as.logical(toupper(force_renv_init))
+  should_update <- as.logical(toupper(update))
   if (should_force_renv_init) {
     cat("Forcing renv initialisation at user request\n")
 
     uses_bioc <- current_lock$Bioconductor
     if (!is.null(uses_bioc)) {
       renv::init(bioconductor = TRUE, profile = profile)
+    }
+
+    if (should_update) {
+      cat("Forcing package restore check\n")
+      updated <- tryCatch({
+        restore_output <- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
+        restore_env <- new.env()
+        restore_env$n <- 0
+        restore_env$report <- restore_output
+        restore_env
+      }, error = function(e) {
+        cat("Restore failed:", conditionMessage(e), "\n")
+        failmsg <- strsplit(sub("failed to install ", "", conditionMessage(e)), ",")
+        restore_env <- new.env()
+        restore_env$n <- 0
+        restore_env$report <- failmsg
+
+        if (length(failmsg) > 0) {
+          failed_restore_output <- gsub("\"", "", trimws(failmsg[[1]]))
+          n_failed_restore <- length(failed_restore_output)
+
+          failed_report <- paste0("The following ", n_failed_restore, " packages failed to restore:\n\n")
+          failed_report <- paste0(failed_report, paste(failed_restore_output, collapse = "\n"), "\n\n", "Attempting to update these packages to the latest CRAN versions.\n\n")
+
+          cat("::group::Attempting repair by updating", n_failed_restore, "packages to latest CRAN versions\n")
+
+          # Use CRAN instead of lockfile RSPM snapshots, preferring binaries
+          options(repos = c(CRAN = "https://cloud.r-project.org", RSPM = Sys.getenv("RSPM")))
+          options(pkgType = "binary")
+
+          pkgs <- names(current_lock$Packages)
+
+          cat("Updating", length(pkgs), "packages from current CRAN\n")
+          install_result <- tryCatch({
+            ci_parse_install_report_packages(
+              utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = FALSE, type = "binary"))
+            )
+          }, error = function(e2) {
+            cat("Binary install failed, trying with source allowed:\n")
+            cat(conditionMessage(e2), "\n")
+            ci_parse_install_report_packages(
+              utils::capture.output(renv::install(pkgs, library = lib, prompt = FALSE, rebuild = TRUE))
+            )
+          })
+          n_installed <- sum(startsWith(trimws(install_result), "-"))
+          cat("::endgroup::\n")
+
+          cat("::group::Updating lockfile\n")
+          snapshot_report <- ci_parse_snapshot_report_packages(
+            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
+          )
+          cat("::endgroup::\n")
+
+          failed_report <- paste0(failed_report, paste0("Repaired ", n_installed, " packages successfully.\n"))
+
+          restore_env$n <- n_installed
+          restore_env$report <- c(failed_report, install_result, snapshot_report)
+
+          cat("Repaired", restore_env$n, "packages\n")
+        }
+        restore_env
+      })
+      n <- n + updated$n
+      the_report <- c(the_report, updated$report)
     }
   }
 
@@ -109,38 +230,10 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   cat("::endgroup::\n")
 
   # Check for updates to packages --------------------------------------
-  should_update <- as.logical(toupper(update))
   if (should_update) {
-    cat("::group::Applying Updates\n")
-    updates <- renv::update(library = lib, check = TRUE)
-    updates_needed <- !identical(updates, TRUE)
-  } else {
-    updates_needed <- FALSE
-  }
-  if (updates_needed) {
-    # apply the updates and run a snapshot if the dry run found updates
-    renv::update(library = lib)
-    # The update report has some noise from the snapshot, so we need to clean
-    # it up by removing the header (that starts before the `# CRAN` signifier)
-    # and the footer that starts with ` - Lockfile written to`
-    update_report <- utils::capture.output(renv::snapshot(lockfile = lock))
-    header <- which(startsWith(trimws(update_report), "#"))
-    if (length(header)) {
-      header <- seq(min(header) - 1L)
-    }
-    footer <- tryCatch(seq(which(startsWith(trimws(update_report), "- Lockfile")),
-    length(update_report)), error = function(e) length(update_report))
-    update_report <- update_report[-c(header, footer)]
-
-    # We can detect the number of updated packages via checking the number of
-    # ticks the output has. This is crude, but the updates from
-    # renv::update(check = TRUE) no longer gives us an accurate count because
-    # it also counts packages that were accidentally inserted.
-    n_updates <- sum(startsWith(trimws(update_report), "-"))
-    n <- n + n_updates
-    the_report <- c(the_report, update_report)
-    cat("Updating", n_updates, "packages", "\n")
-    cat("::endgroup::\n")
+    update_report <- ci_package_update_check(lib, lock)
+    the_report <- c(the_report, update_report$report)
+    n <- n + update_report$n
   }
 
   cat("::group::Cleaning the cache\n")
