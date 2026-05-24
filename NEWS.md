@@ -1,3 +1,8 @@
+# vise 0.0.2.9000
+
+* Provide a more rigorous check and fix pathway for failed packages (@froggleston)
+
+
 # vise 0.0.1.9000
 
 * `ci_update()` now accepts a skip_restore option to force lockfile updating

@@ -1,6 +1,6 @@
 Package: vise
 Title: Package Discovery and Management Based on 'renv'
-Version: 0.0.1.9000
+Version: 0.0.2.9000
 Authors@R: c(
     person(given = "Robert",
            family = "Davey",
