@@ -38,8 +38,7 @@ ci_package_update_check <- function(lib, lockfile) {
     # it up by removing the header (that starts before the `# CRAN` signifier)
     # and the footer that starts with ` - Lockfile written to`
     snapshot_report <- ci_parse_snapshot_report_packages(
-      utils::capture.output(renv::snapshot(lockfile = lockfile, library = lib, prompt = FALSE)),
-      snapshot = TRUE
+      utils::capture.output(renv::snapshot(lockfile = lockfile, library = lib, prompt = FALSE))
     )
 
     # We can detect the number of updated packages via checking the number of
