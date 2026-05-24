@@ -102,7 +102,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
     }
 
     if (should_update) {
-      cat("Attempt initial package restore check\n")
+      cat("Forcing package restore check\n")
       updated <- tryCatch({
         restore_output <- utils::capture.output(renv::restore(library = lib, lockfile = lock, prompt = FALSE, rebuild = FALSE), type = "message")
         restore_env <- new.env()
@@ -152,7 +152,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
           )
           cat("::endgroup::\n")
 
-          failed_report <- paste0(failed_report, paste0("Repaired ", restore_env$n, " packages successfully.\n"))
+          failed_report <- paste0(failed_report, paste0("Repaired ", n_installed, " packages successfully.\n"))
 
           restore_env$n <- n_installed
           restore_env$report <- c(failed_report, install_result, snapshot_report)
