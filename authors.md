@@ -13,13 +13,13 @@ Source:
 [`DESCRIPTION`](https://github.com/zkamvar/vise/blob/main/DESCRIPTION)
 
 Davey R, Kamvar Z (2026). *vise: Package Discovery and Management Based
-on 'renv'*. R package version 0.0.1.9000,
+on 'renv'*. R package version 0.0.2.9000,
 <https://github.com/zkamvar/vise>.
 
     @Manual{,
       title = {vise: Package Discovery and Management Based on 'renv'},
       author = {Robert Davey and Zhian N. Kamvar},
       year = {2026},
-      note = {R package version 0.0.1.9000},
+      note = {R package version 0.0.2.9000},
       url = {https://github.com/zkamvar/vise},
     }

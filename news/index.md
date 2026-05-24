@@ -1,5 +1,9 @@
 # Changelog
 
+## vise 0.0.2.9000
+
+- Provide a more rigorous check and fix pathway for failed packages (1)
+
 ## vise 0.0.1.9000
 
 - [`ci_update()`](https://zkamvar.github.io/vise/reference/ci_update.md)
