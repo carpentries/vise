@@ -20,7 +20,7 @@ ci_parse_install_report_packages <- function(install_report) {
   return(install_report_clean)
 }
 
-ci_package_update_check <- function(lib = lib) {
+ci_package_update_check <- function(lib, lockfile) {
   report_env = new.env()
 
   cat("::group::CI Package Update Check\n")
@@ -232,7 +232,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
   # Check for updates to packages --------------------------------------
   if (should_update) {
-    update_report <- ci_package_update_check(lib = lib)
+    update_report <- ci_package_update_check(lib, lock)
     the_report <- c(the_report, update_report$report)
     n <- n + update_report$n
   }
