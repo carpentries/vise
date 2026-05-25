@@ -1,3 +1,17 @@
+detect_linux_distro <- function() {
+  if (Sys.info()[["sysname"]] == "Linux") {
+    os_release <- readLines("/etc/os-release")
+    distro <- sub("ID=(.*)$", "\\1", os_release[grepl("^ID=", os_release)])
+    release <- sub("VERSION_ID=(.*)$", "\\1", os_release[grepl("^VERSION_ID=", os_release)])
+    codename <- ""
+    if (distro == "ubuntu") {
+      codename <- sub("UBUNTU_CODENAME=(.*)$", "\\1", os_release[grepl("^UBUNTU_CODENAME=", os_release)])
+    }
+    return(list(distro = distro, version = release, codename = codename))
+  }
+  return(NULL)
+}
+
 #' detect and execute system requirements from a lockfile
 #'
 #' This function converts a renv lockfile to a description file and then
@@ -24,8 +38,24 @@
 ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc"), use_pak = FALSE) {
   # convert the lockfile to a temporary DESCRIPTION file
   desc <- lock2desc(lockfile)
-  ver  <- tolower(system("lsb_release -irs", intern = TRUE))
-  print(ver)
+  on_linux <- Sys.info()[["sysname"]] == "Linux"
+  release <- detect_linux_distro()
+  distro <- release$distro
+  ver <- release$version
+  print(distro, ver)
+
+  if (Sys.getenv("RSPM") == "") {
+    if (distro == "ubuntu") {
+      codename <- release$codename
+      Sys.setenv("RSPM" =
+        paste0("https://packagemanager.posit.co/all/__linux__/", codename, "/latest")
+      )
+    } else if (distro == "alpine") {
+      Sys.setenv("RSPM" =
+        paste0("https://packagemanager.posit.co/cran/latest")
+      )
+    }
+  }
 
   if (use_pak) {
     if (!requireNamespace("pak", quietly = TRUE)) {
@@ -34,14 +64,6 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     }
 
     cat("::group::Register Repositories\n")
-    on_linux <- Sys.info()[["sysname"]] == "Linux"
-    if (on_linux) {
-        if (Sys.getenv("RSPM") == "") {
-        release <- system("lsb_release -c | awk '{print $2}'", intern = TRUE)
-        Sys.setenv("RSPM" =
-        paste0("https://packagemanager.posit.co/all/__linux__/", release, "/latest"))
-        }
-    }
     repos <- list(
         RSPM        = Sys.getenv("RSPM"),
         carpentries = "https://carpentries.r-universe.dev/",
@@ -110,9 +132,11 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
       stop("The {remotes} package is required for this function.")
     }
 
-    sys_reqs <- remotes::system_requirements(ver[1], ver[2], path = dirname(desc))
+    pkg_manager <- if (distro == "ubuntu") "apt-get" else if (distro == "alpine") "apk" else stop("Unsupported Linux distribution: ", distro)
+    pkg_install_cmd <- if (distro == "ubuntu") paste(pkg_manager, "-y install") else if (distro == "alpine") paste(pkg_manager, "add --no-cache") else stop("Unsupported Linux distribution: ", distro)
 
-    if (ver[1] == "ubuntu") {
+    if (distro == "ubuntu") {
+      sys_reqs <- remotes::system_requirements(distro, ver, path = dirname(desc))
       # get the apt installable packages
       apt_reqs <- sys_reqs[grepl("^apt-get.*install", sys_reqs)]
 
@@ -141,21 +165,19 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
       #nocov start
       if (execute) {
         su <- if (sudo) "sudo" else ""
-        if (ver[1] == "ubuntu") {
-          system(trimws(paste(su, "apt-get update")))
-          system(trimws(paste(su, "apt-get -y install software-properties-common")))
+        system(trimws(paste(su, "apt-get update")))
+        system(trimws(paste(su, "apt-get -y install software-properties-common")))
 
-          for (ppa_r in ppa_reqs) {
-            system(trimws(paste(su, ppa_r)))
-          }
+        for (ppa_r in ppa_reqs) {
+          system(trimws(paste(su, ppa_r)))
+        }
 
-          for (oth_r in other_reqs) {
-            system(trimws(paste(su, oth_r)))
-          }
+        for (oth_r in other_reqs) {
+          system(trimws(paste(su, oth_r)))
+        }
 
-          for (pkg_r in pkg_reqs) {
-            system(trimws(paste(su, pkg_r)))
-          }
+        for (pkg_r in pkg_reqs) {
+          system(trimws(paste(su, pkg_r)))
         }
       }
       #nocov end
