@@ -34,8 +34,10 @@ Suggests:
     withr
 Remotes:
     r-lib/pak,
-    r-lib/remotes
+    r-lib/remotes,
+    r-lib/yaml
 Config/testthat/edition: 3
 Config/Needs/check:
     github::r-lib/pak,
-    github::r-lib/remotes
+    github::r-lib/remotes,
+    github::r-lib/yaml
