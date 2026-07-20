@@ -22,6 +22,10 @@
 #'   print(vise::ci_sysreqs(lock, execute = FALSE))
 #' }
 ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc"), use_pak = FALSE) {
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    install.packages("yaml")
+  }
+
   # convert the lockfile to a temporary DESCRIPTION file
   desc <- lock2desc(lockfile)
   ver  <- tolower(system("lsb_release -irs", intern = TRUE))
