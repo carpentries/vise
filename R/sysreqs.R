@@ -22,10 +22,6 @@
 #'   print(vise::ci_sysreqs(lock, execute = FALSE))
 #' }
 ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git", "make", "pandoc"), use_pak = FALSE) {
-  if (!requireNamespace("yaml", quietly = TRUE)) {
-    install.packages("yaml")
-  }
-
   # convert the lockfile to a temporary DESCRIPTION file
   desc <- lock2desc(lockfile)
   ver  <- tolower(system("lsb_release -irs", intern = TRUE))
@@ -55,6 +51,10 @@ ci_sysreqs <- function(lockfile, execute = TRUE, sudo = TRUE, exclude = c("git",
     cat("Repositories Used\n")
     cat(paste(pak::repo_status()$name, " [", pak::repo_status()$url), "]\n")
     cat("::endgroup::\n")
+
+    if (!requireNamespace("yaml", quietly = TRUE)) {
+      install.packages("yaml", repos = repos)
+    }
 
     d <- desc::description$new(desc)
     imports <- d$get_deps()

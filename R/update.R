@@ -21,10 +21,6 @@ ci_parse_install_report_packages <- function(install_report) {
 }
 
 ci_package_update_check <- function(lib, lockfile) {
-  if (!requireNamespace("yaml", quietly = TRUE)) {
-    install.packages("yaml")
-  }
-
   report_env = new.env()
 
   cat("::group::CI Package Update Check\n")
@@ -80,10 +76,6 @@ ci_package_update_check <- function(lib, lockfile) {
 #' @param repos the repositories to use in the search.
 #' @export
 ci_update <- function(profile = 'lesson-requirements', update = 'true', force_renv_init = 'false', repos = NULL) {
-  if (!requireNamespace("yaml", quietly = TRUE)) {
-    install.packages("yaml")
-  }
-
   Sys.setenv("RENV_PROFILE" = profile)
   lib  <- renv::paths$library()
   lock <- renv::paths$lockfile()
@@ -94,6 +86,10 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
   if (on_linux)
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
+
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    install.packages("yaml", repos = getOption("repos"))
+  }
 
   n <- 0
   the_report <- character(0)
