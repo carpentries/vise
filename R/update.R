@@ -38,7 +38,7 @@ ci_package_update_check <- function(lib, lockfile) {
     # it up by removing the header (that starts before the `# CRAN` signifier)
     # and the footer that starts with ` - Lockfile written to`
     snapshot_report <- ci_parse_snapshot_report_packages(
-      utils::capture.output(renv::snapshot(lockfile = lockfile, library = lib, prompt = FALSE))
+      utils::capture.output(renv::snapshot(lockfile = lockfile, library = lib, prompt = FALSE, force = TRUE))
     )
 
     # We can detect the number of updated packages via checking the number of
@@ -59,7 +59,7 @@ ci_package_update_check <- function(lib, lockfile) {
 #'
 #' With actively developed projects, it can be beneficial to auto-update
 #' packages used in the project with a failsafe to roll back versions in case
-#' there are breaking changes that need to be fixed. This is noramlly
+#' there are breaking changes that need to be fixed. This is normally
 #' accomplished via the function [renv::update()], but that assumes that no new
 #' packages have been introduced into your workflow. This function searches for
 #' new packages, and updates existing packages.
@@ -147,7 +147,7 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
 
           cat("::group::Updating lockfile\n")
           snapshot_report <- ci_parse_snapshot_report_packages(
-            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE))
+            utils::capture.output(renv::snapshot(lockfile = lock, library = lib, prompt = FALSE, force = TRUE))
           )
           cat("::endgroup::\n")
 
