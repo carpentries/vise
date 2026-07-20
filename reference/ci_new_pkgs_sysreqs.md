@@ -32,5 +32,5 @@ if (startsWith(tolower(R.version$os), "linux")) {
 }
 #> [1] "ubuntu" "24.04" 
 #> No system dependencies to install
-#> <environment: 0x56128a2095b0>
+#> <environment: 0x55cc8adeaab8>
 ```
