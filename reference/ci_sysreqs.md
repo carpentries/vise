@@ -59,5 +59,5 @@ if (startsWith(tolower(R.version$os), "linux")) {
   print(vise::ci_sysreqs(lock, execute = FALSE))
 }
 #> [1] "ubuntu" "24.04" 
-#> <environment: 0x55e7332f8ed0>
+#> <environment: 0x56129138acc8>
 ```
