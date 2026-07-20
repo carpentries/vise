@@ -87,10 +87,6 @@ ci_update <- function(profile = 'lesson-requirements', update = 'true', force_re
     options(repos = c(RSPM = Sys.getenv("RSPM"), getOption("repos")))
   renv::load()
 
-  if (!requireNamespace("yaml", quietly = TRUE)) {
-    install.packages("yaml", repos = getOption("repos"))
-  }
-
   n <- 0
   the_report <- character(0)
 
